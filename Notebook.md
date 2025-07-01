@@ -54,3 +54,4 @@ splitting (perpendicular to field).
 New repository created due to MATLAB error in pushing changes to old repository 'computational biophysics'.  
 Headed towards final implementations to model and then working to replicate Abijeet's data from paper.  
 Goal is to work on a decreasing velocity factor based on a function as a cell gets close to splitting.  
+Both implemented, working next towards attaining more data and more accurate data for comparison.
