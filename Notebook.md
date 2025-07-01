@@ -48,3 +48,9 @@ factors of the model using logical on/off type switches. Implemented cell divisi
 conducted from Zhao 1999 paper where it is stated that the cells will tend to split perpendicular to the electric field, which
 was implemented based on crossing cosine with y and field angle and sine with x to get the cross
 splitting (perpendicular to field). 
+
+**7-1-2025**
+
+New repository created due to MATLAB error in pushing changes to old repository 'computational biophysics'.  
+Headed towards final implementations to model and then working to replicate Abijeet's data from paper.  
+Goal is to work on a decreasing velocity factor based on a function as a cell gets close to splitting.  
