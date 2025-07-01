@@ -1,15 +1,14 @@
 function            [Cradius,x, y, vx, vy, vel_ang, x_time, y_time, theta_time, RadTracker, R, G, B, Pressure, exempt, vx_time, vy_time, cell_lifetime]...
-    = RadGrowth(Cradius0, Pressure, x, y, vel_ang, vx, vy, x_time, y_time, time, theta_time, RadTracker, R, G, B, exempt, vx_time, vy_time, cell_lifetime, Ex_strength, Ey_strength)
+    = RadGrowth(Cradius0, Pressure, x, y, vel_ang, vx, vy, x_time, y_time, time, theta_time, RadTracker, R, G, B, exempt, vx_time, vy_time, cell_lifetime, Ex_strength, Ey_strength, growth_rate)
 %% Allows cell growth, mitosis and death
 
 % declaration of constants
-global dt NumCells critRad Ccyclet critical_pressure vels_med daughter_noise ...
+global dt NumCells critRad critical_pressure vels_med daughter_noise ...
     death_pressure death_rate chill runTime Field rand_division                                                              %#ok<GVMIS>
 
 % Initialization
 Cradius = Cradius0;
 death_chance = zeros(NumCells, 1);
-growth_rate(1:NumCells, 1) = (pi * randgaussrad(critRad, (critRad / 200)).^2) / (2* Ccyclet);
 field_angle = atan2(Ey_strength, Ex_strength);
 
 %% loop over all cells
@@ -39,7 +38,7 @@ for i = 1:NumCells
             y(NumCells, 1) = y(i,1) - Cradius(i,1)*rand() * cos(field_angle);
             x(i,1) = x(i,1) - Cradius(i,1)*rand() * sin(field_angle);
             y(i, 1) = y(i,1) + Cradius(i,1)*rand() * cos(field_angle);
-
+            
             vx(NumCells, 1) = vels_med * cos(field_angle) + daughter_noise * pi * (rand() - 0.5);
             vy(NumCells, 1) = vels_med * sin(field_angle) + daughter_noise * pi * (rand() - 0.5);
             vx(i,1) = -vels_med * cos(field_angle) + daughter_noise * pi * (rand() - 0.5);

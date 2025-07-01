@@ -1,11 +1,11 @@
 % Iteration update of parameters for function
-function [xf, yf, vxf, vyf, cell_lifetime] = Step_Update(x0, y0, vx0, vy0, Fx, Fy, neibAngAvg, exempt, cell_lifetime)
+function [xf, yf, vxf, vyf, cell_lifetime] = Step_Update(x0, y0, vx0, vy0, Fx, Fy, neibAngAvg, exempt, cell_lifetime, Cradius, growth_rate)
 
 % Inputs: x(t),y(t) // vx(t),vy(t) // radius(t) // Fx(t),Fy(t) // alignment angle(t)
 % Outputs: x(t+1), y(t+1) // vx(t+1), vy(t+1) // radius(t+1)
 
 % Declaration of Globals
-global NumCells dt eta vels_med %#ok<GVMIS> 
+global NumCells dt eta vels_med critRad runTime speed_decay                                           %#ok<GVMIS> 
 
 %% Preallocation of updated values
 vxf = zeros(NumCells,1);
@@ -13,6 +13,7 @@ vyf = zeros(NumCells,1);
 vxNat = zeros(NumCells, 1);
 vyNat = zeros(NumCells, 1);
 angNatural = zeros(NumCells, 1);
+tmp_time = zeros(NumCells, 1);
 xf = x0;
 yf = y0;
 
@@ -38,6 +39,12 @@ for i = 1:NumCells
         % (componentwise)
         vxf(i, 1) = (vxNat(i,1) + Fx(i,1))* dt; % x component
         vyf(i, 1) = (vyNat(i,1) + Fy(i,1))* dt;% y component
+        if(Cradius(i,1) > 0.9 * critRad)
+            tmp_time(i,1) = tmp_time(i,1) + 1;
+            pow = -(tmp_time(i,1) / (runTime * growth_rate(i,1) * speed_decay)) ; 
+            vxf(i,1) = vxf(i,1) * exp(pow);
+            vyf(i,1) = vyf(i,1) * exp(pow);
+        end
     end % end live cell condition
 end % end all cells loop
 end % end function

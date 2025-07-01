@@ -10,15 +10,15 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     c_rec c_lig adh runTime Field xphi yphi w ExMax EyMax mu ...
     critRad Ccyclet critical_pressure daughter_noise Cell_std death_rate ...
     death_pressure chill dim2directionality displacement live polarhist dim1directionality...
-    Discrete Sine dim1displacement rand_division                                                                                            %#ok<GVMIS>
+    Discrete Sine dim1displacement rand_division speed_decay                                                                                           %#ok<GVMIS>
 
 % Begin Simulation timer
 tStart = tic;
   
 %% Domain Parameters
-runTime = 1;                          % total runTime of simulation
+runTime = 500;                          % total runTime of simulation
 dt = 1;                                 % time step
-NumCells = 20;                        % number of cells in simulation
+NumCells = 1;                        % number of cells in simulation
 vels_med = 0.15;                        % initial velocity param center point
 lbox = 150;                             % size of the box particles are confined to
 R_boundary = lbox/6;                    % Sample domain size for cells to begin
@@ -32,6 +32,7 @@ death_pressure = 0.85;                  % Pressure required for apoptosis
 critical_pressure = 0.05;               % Critical presssure for dormancy
 Cell_radius = 2;                        % fixed cell radius
 Cell_std = 0.08;                        % Standard Deviation of cell radii
+speed_decay = 0.05;                        % speed decay rate for mitosis
 
 %% Cell-cell parameters
 k = 0.3;                                   % constant in force repulsion calculation (~elasticity)
@@ -46,9 +47,9 @@ adh = 1e-4;                             % adhesive coefficient
 
 %% Cell-Field parameters
 % Discrete Parameters
-Field = 1;                              % Signals to time varying fields that field is on if 1
-rand_division = 0;                      % Enables field-directed mitosis
-Discrete = 1;                           % Enables Discrete field change
+Field = 0;                              % Signals to time varying fields that field is on if 1
+rand_division = 1;                      % Enables field-directed mitosis
+Discrete = 0;                           % Enables Discrete field change
 ExMax = 0.1;                            % x field max
 EyMax = 0;                              % y field max
 
@@ -86,6 +87,7 @@ timer = zeros(runTime, 3);              % Timer to keep track of computational e
 RadTracker = zeros(runTime, NumCells);  % tracker of cell size
 exempt = ones(NumCells, 1);             % cell death logical
 cell_lifetime = zeros(NumCells, 1);     % cell lifetime tracker
+growth_rate = zeros(NumCells, 1);       % initializes growth rate for all cells
 
 %% Plotting Parameters
 % Parameters for live simulation visualization
@@ -113,6 +115,9 @@ for time = 1:runTime
         % if all cells die, end simulation
         disp('All cells dead')
         break
+    end
+    for j = 1:NumCells
+        growth_rate(j, 1) = (pi * randgaussrad(critRad, (critRad / 2)).^2) / (2* Ccyclet);
     end
     % Reinitializes electric field
     [u, v, X, Y, Ex_strength, Ey_strength] = EF_Grid_Init(time);
@@ -168,16 +173,16 @@ for time = 1:runTime
     Pressure = Epressure + Cpressure;
 
     % Step update function
-    [x, y, vx, vy, cell_lifetime] = Step_Update(x, y, vx, vy, Fx_net, Fy_net, neibAngAvg, exempt, cell_lifetime);
+    [x, y, vx, vy, cell_lifetime] = Step_Update(x, y, vx, vy, Fx_net, Fy_net, neibAngAvg, exempt, cell_lifetime, Cradius, growth_rate);
     vel_ang = atan2(vy,vx);
 
     % end step update timer
     timer(time,3) = toc(Steptimer);
 
     % Update cell size // Mitosis // Apoptosis
-    [Cradius,x, y, vx, vy, vel_ang, x_time, y_time, theta_time, RadTracker,R, G, B, Pressure, exempt, vx_time, vy_time, cell_lifetime]...
+    [Cradius,x, y, vx, vy, vel_ang, x_time, y_time, theta_time, RadTracker, R, G, B, Pressure, exempt, vx_time, vy_time, cell_lifetime]...
         = RadGrowth...
-        (Cradius, Pressure, x, y, vel_ang, vx, vy, x_time, y_time, time, theta_time,RadTracker, R, G, B, exempt, vx_time, vy_time, cell_lifetime, Ex_strength, Ey_strength);
+        (Cradius, Pressure, x, y, vel_ang, vx, vy, x_time, y_time, time, theta_time,RadTracker, R, G, B, exempt, vx_time, vy_time, cell_lifetime, Ex_strength, Ey_strength, growth_rate);
 
     %% Live Simulation visualization plot
     if(live)
