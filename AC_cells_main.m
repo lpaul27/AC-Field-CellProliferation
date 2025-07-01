@@ -18,7 +18,7 @@ tStart = tic;
 %% Domain Parameters
 runTime = 500;                          % total runTime of simulation
 dt = 1;                                 % time step
-NumCells = 1;                        % number of cells in simulation
+NumCells = 10;                        % number of cells in simulation
 vels_med = 0.15;                        % initial velocity param center point
 lbox = 150;                             % size of the box particles are confined to
 R_boundary = lbox/6;                    % Sample domain size for cells to begin
@@ -26,9 +26,9 @@ chill = 15;                             % chill time to suppress cell death
 
 %% Cell Parameters
 critRad = 2.05;                          % critical radius for mitosis
-Ccyclet = 100;                          % benchmark cell cycle time
-death_rate = 1e-4;                         % Cell death rate
-death_pressure = 0.85;                  % Pressure required for apoptosis
+Ccyclet = 10;                          % benchmark cell cycle time
+death_rate = 1e-20;                         % Cell death rate
+death_pressure = 100.85;                  % Pressure required for apoptosis
 critical_pressure = 0.05;               % Critical presssure for dormancy
 Cell_radius = 2;                        % fixed cell radius
 Cell_std = 0.08;                        % Standard Deviation of cell radii
@@ -43,7 +43,7 @@ mu = 0.1;                              % electrical mobility
 neighborWeight = 0.1;                   % group movement weighting
 c_rec = 0.9;                            % mean receptor concentration (noralized)
 c_lig = 0.9;                            % mean ligand concentration (normalized)
-adh = 1e-4;                             % adhesive coefficient
+adh = 1e-2;                             % adhesive coefficient
 
 %% Cell-Field parameters
 % Discrete Parameters
