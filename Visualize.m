@@ -1,4 +1,4 @@
-function [] = Visualize(x_time,y_time, theta_time, time_control)
+function [] = Visualize(x_time,y_time, theta_time, time_control, displacementAvg)
 %% Function for static visualization
 % Optimal for large sets of data
 
@@ -40,7 +40,7 @@ if(~live)
         hold on;
         plot((x_time - x_time(1,:)), (y_time - y_time(1,:)))
         hold on;
-        plot((x_avg - x_avg(1,1)), (y_avg - y_avg(1,1)), 'w', 'LineWidth', 3);
+        plot((x_avg - x_avg(1,1)), (y_avg - y_avg(1,1)), 'k', 'LineWidth', 3);
         xline(0, '-');
         yline(0, '-');
         xlabel('x-displacement (a.u)')
@@ -141,5 +141,11 @@ if(~live)
         plot((x_time(floor(runTime/2) + 1: runTime, :) - x_time(runTime / 2,:)), (y_time(floor(runTime / 2) + 1: runTime, :) - y_time(runTime/ 2 + 1,:)))
         title('Field Direction: +y')
     end % end single axis directionality
+
+    %% distribution of data
+    if(0)
+        histogram(displacementAvg, size(displacementAvg))
+    end
+
 end % end live conditional
 end % end function

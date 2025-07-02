@@ -21,6 +21,9 @@ if(Discrete && Field)
         Ex_strength = ExMax;
         Ey_strength = EyMax;
     end % end field change cond
+else
+    Ex_strength = ExMax;
+    Ey_strength = EyMax;
 end % end discrete conditional
 %% Case 2: Representation based on a sine function
 if(Sine && Field)
