@@ -41,7 +41,7 @@ for l = 1:outerSteps
 
         %% Cell-cell parameters
         k = 0.3;                                   % constant in force repulsion calculation (~elasticity)
-        eta = 0.05;                             % noise strength in movement
+        eta = 0.2;                             % noise strength in movement
         daughter_noise = 0.1;                     % noise strength in mitosis separation
         nu = 0.1;                               % friction factor
         mu = 00.04;                              % electrical mobility
@@ -59,7 +59,7 @@ for l = 1:outerSteps
 %             ExMax = 0.00;                            % x field max
 %             Field = 0;
 %         else
-            ExMax = 0.001;
+            ExMax = 0.01;
             Field = 1;
 %         end
         EyMax = 0;                              % y field max
@@ -222,7 +222,7 @@ for l = 1:outerSteps
                 hold on
             end
         end % end time loop
-        avg = mean((abs(x_time - x_time(1,1))),2);
+        avg = (mean((abs(x_time - x_time(1,1))),2));
         displacementVal(p, 1) = abs(avg(runTime, 1) - avg(1,1)) / runTime;
         %% Static Plot Visualization
 
