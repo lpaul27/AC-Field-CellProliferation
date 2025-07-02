@@ -55,3 +55,14 @@ New repository created due to MATLAB error in pushing changes to old repository 
 Headed towards final implementations to model and then working to replicate Abijeet's data from paper.  
 Goal is to work on a decreasing velocity factor based on a function as a cell gets close to splitting.  
 Both implemented, working next towards attaining more data and more accurate data for comparison.
+
+
+**7-2-2025**
+
+Working towards units of parameters and how the parameters used in this model work out to be in natural units.  
+This process is completed by mathematic reasoning between the few physical constraint parameters such
+as the time of simulation, cell size and active motility speed and the rest of the values can be 
+determined mathematically or tweaked slightly if mathematics cannot represent it in a simple calculation.
+The goal is to get the model consistant with data as well as explore new ideas while tweaking.
+One idea attained was the idea of "spring force" buildup as a cell approaches mitosis, acting as a buildup of
+excess repulsive force towards the two daughter cells, causing a slingshot of force away from one another.
