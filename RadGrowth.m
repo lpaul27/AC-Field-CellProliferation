@@ -26,17 +26,20 @@ for i = 1:NumCells
         NumCells = NumCells + 1;
         % random based position mitosis
         if(~Field || rand_division)
-            x(NumCells,1) = x(i,1) + (1 - 1/sqrt(2)) * (rand() - 0.5);
-            y(NumCells,1) = y(i,1) + (1 - 1/sqrt(2)) * (rand() - 0.5);
+            x(NumCells,1) = x(i,1) + Cradius(i,1)*(1 - 1/sqrt(2)) * (rand() - 0.5);
+            y(NumCells,1) = y(i,1) + Cradius(i,1)*(1 - 1/sqrt(2)) * (rand() - 0.5);
+            x(i,1) = x(i,1) + Cradius(i,1)*(1 - 1/sqrt(2)) * (rand() - 0.5);
+            y(i,1) = y(i,1) + Cradius(i,1)*(1 - 1/sqrt(2)) * (rand() - 0.5);    
+            y(NumCells,1) = y(i,1) + Cradius(i,1)*(1 - 1/sqrt(2)) * (rand() - 0.5);
             vx(NumCells, 1) = vels_med * cos(vel_ang(i) + daughter_noise * pi * (rand() - 0.5));
             vy(NumCells, 1) = vels_med * sin(vel_ang(i) + daughter_noise * pi * (rand() - 0.5));
         end
         % perpendicular to field based mitosis
         if(Field && ~rand_division)
-            x(NumCells, 1) = x(i,1) + Cradius(i,1)*rand() * cos(field_angle);
-            y(NumCells, 1) = y(i,1) - Cradius(i,1)*rand() * sin(field_angle);
-            x(i,1) = x(i,1) - Cradius(i,1)*rand() * cos(field_angle);
-            y(i, 1) = y(i,1) + Cradius(i,1)*rand() * sin(field_angle);
+            x(NumCells, 1) = x(i,1) + (1 - 1/sqrt(2))*Cradius(i,1) * cos(field_angle * daughter_noise * (rand() - 0.5));
+            y(NumCells, 1) = y(i,1) - (1 - 1/sqrt(2))*Cradius(i,1) * sin(field_angle * daughter_noise * (rand() - 0.5));
+            x(i,1) = x(i,1) - (1 - 1/sqrt(2))*Cradius(i,1)*rand() * cos(field_angle * daughter_noise * (rand() - 0.5));
+            y(i, 1) = y(i,1) + (1 - 1/sqrt(2))*Cradius(i,1)*rand() * sin(field_angle * daughter_noise * (rand() - 0.5));
             
             vx(NumCells, 1) = vels_med * cos(field_angle) + daughter_noise * pi * (rand() - 0.5);
             vy(NumCells, 1) = vels_med * sin(field_angle) + daughter_noise * pi * (rand() - 0.5);
@@ -56,7 +59,7 @@ for i = 1:NumCells
         B(NumCells, 1) = 1;
 
         % Update tracker to account for new cells
-        x_time(1:time, NumCells) = x_time(1:time, i);
+        x_time(1:time, NumCells) = x_time(1:time, i);  
         y_time(1:time, NumCells) = y_time(1:time, i);
         theta_time(1:time, NumCells) = theta_time(1:time, i);
         RadTracker(1:time, NumCells) = RadTracker(1:time, i);
@@ -66,7 +69,6 @@ for i = 1:NumCells
         cell_lifetime(i, 1) = 0;
         tmp_time(i,1) = 0;
         tmp_time(NumCells,1) = 0;
-
 
     end % end mitosis conditional
 

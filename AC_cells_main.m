@@ -18,41 +18,41 @@ outerSteps = 1;
 displacementVal = zeros(steps, 1);
 displacementAvg = zeros(outerSteps,1);
 %% Domain Parameters
-runTime = 120;                          % total runTime of simulation
-dt = 1;                                 % time step
-NumCells = 35;                          % number of cells in simulation
-vels_med = 0.083;                         % initial velocity param center point
+runTime = 120;                           % total runTime of simulation
+dt = 5;                                  % time step
+NumCells = 35;                           % number of cells in simulation
+vels_med = 0.083;                          % initial velocity param center point
 lbox = 1050;                             % size of the box particles are confined to
-R_boundary = lbox/6;                    % Sample domain size for cells to begin
-chill = 15;                             % chill time to suppress cell death
+R_boundary = lbox/6;                     % Sample domain size for cells to begin
+chill = 15;                              % chill time to suppress cell death
 
 %% Cell Parameters
-critRad = 12;                          % critical radius for mitosis
-Ccyclet = 100;                          % benchmark cell cycle time
-death_rate = 1e-200;                         % Cell death rate
-death_pressure = 1000;                  % Pressure required for apoptosis
-critical_pressure = 0.05;               % Critical presssure for dormancy
+critRad = 12;                            % critical radius for mitosis
+Ccyclet = 100;                           % benchmark cell cycle time
+death_rate = 1e-200;                     % Cell death rate
+death_pressure = 1000;                   % Pressure required for apoptosis
+critical_pressure = 0.05;                % Critical presssure for dormancy
 Cell_radius = 10;                        % fixed cell radius
-Cell_std = 0.08;                        % Standard Deviation of cell radii
+Cell_std = 0.08;                         % Standard Deviation of cell radii
 speed_decay = 10;                        % speed decay rate for mitosis
 
 %% Cell-cell parameters
-k = 0.01;                                   % constant in force repulsion calculation (~elasticity)
-eta = 0.02;                             % noise strength in movement
-daughter_noise = 0.1;                     % noise strength in mitosis separation
-nu = 1;                               % friction factor
-mu = 00.04;                              % electrical mobility
-neighborWeight = 0.1;                   % group movement weighting
-c_rec = 0.9;                            % mean receptor concentration (noralized)
+k = 0.01;                               % constant in force repulsion calculation (~elasticity)
+eta = 0.005;                            % noise strength in movement
+daughter_noise = 0.1;                   % noise strength in mitosis separation
+nu = 1;                                 % friction factor
+mu = 00.04;                             % electrical mobility
+neighborWeight = 0.001;                 % group movement weighting
+c_rec = 0.9;                            % mean receptor concentration (normalized)
 c_lig = 0.9;                            % mean ligand concentration (normalized)
-adh = 1e-4;                             % adhesive coefficient
+adh = 0;                                % adhesive coefficient
 
 %% Cell-Field parameters
 % Discrete Parameters
 Field = 0;                              % Signals to time varying fields that field is on if 1
 rand_division = 0;                      % Enables field-directed mitosis
 Discrete = 0;                           % Enables Discrete field change
-ExMax = 0.02;                            % x field max
+ExMax = 0.02;                           % x field max
 EyMax = 0;                              % y field max
 
 % Sinusoidal parameters
@@ -70,11 +70,11 @@ R = zeros(NumCells, 1);                 % Red scale for plotting
 G = ones(NumCells, 1);                  % Green scale for plotting
 B = ones(NumCells, 1);                  % Blue scale for plotting
 
-live = 1;                               % Enables Live Visualization
+live = 0;                               % Enables Live Visualization
 dim1directionality = 0;                 % enables 1D Directionality plot
 dim2directionality = 0;                 % Enables 2D Directionality plot
 dim1displacement = 0;                   % Enables 1D Displacement plot
-displacement = 1;                       % Enables 2D Displacement plot
+displacement = 0;                       % Enables 2D Displacement plot
 polarhist = 0;                          % Enables polar histogram plot
 
 %% Initialization of Variables
@@ -216,6 +216,15 @@ for time = 1:runTime
     end
 end % end time loop
 %% Static Plot Visualization
+xavg = mean(abs(x_time - x_time(1,:)),2);
+yavg = mean(abs(y_time - y_time(1,:)),2);
+
+displacementrunx = abs(xavg(runTime, 1) - xavg(1,1)) / runTime;
+displacementruny = abs(yavg(runTime, 1) - yavg(1,1)) / runTime;
+displacement_run = sqrt(displacementruny^2 + displacementrunx^2)
+
+
+
 Visualize(x_time,y_time, theta_time, time_control, displacementAvg);
 % end timer of full sequence
 toc(tStart);

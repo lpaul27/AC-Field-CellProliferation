@@ -40,7 +40,7 @@ for i = 1:NumCells
         vyf(i, 1) = (vyNat(i,1) + Fy(i,1))* dt;% y component
         if(Cradius(i,1) > 0.75 * critRad)
             tmp_time(i,1) = tmp_time(i,1) + 1;
-            pow = -(tmp_time(i,1) / (runTime * growth_rate(i,1) * speed_decay)) ; 
+            pow = -(tmp_time(i,1) / (speed_decay)) ; 
             vxf(i,1) = vxf(i,1) * exp(pow);
             vyf(i,1) = vyf(i,1) * exp(pow);
         end
