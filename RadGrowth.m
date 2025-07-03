@@ -1,5 +1,5 @@
-function            [Cradius,x, y, vx, vy, vel_ang, x_time, y_time, theta_time, RadTracker, R, G, B, Pressure, exempt, vx_time, vy_time, cell_lifetime]...
-    = RadGrowth(Cradius0, Pressure, x, y, vel_ang, vx, vy, x_time, y_time, time, theta_time, RadTracker, R, G, B, exempt, vx_time, vy_time, cell_lifetime, Ex_strength, Ey_strength, growth_rate)
+function            [Cradius,x, y, vx, vy, vel_ang, x_time, y_time, theta_time, RadTracker, R, G, B, Pressure, exempt, vx_time, vy_time, cell_lifetime, tmp_time]...
+    = RadGrowth(Cradius0, Pressure, x, y, vel_ang, vx, vy, x_time, y_time, time, theta_time, RadTracker, R, G, B, exempt, vx_time, vy_time, cell_lifetime, Ex_strength, Ey_strength, growth_rate, tmp_time)
 %% Allows cell growth, mitosis and death
 
 % declaration of constants
@@ -24,7 +24,6 @@ for i = 1:NumCells
     if(Cradius(i,1) >= critRad && Pressure(i,1) <= critical_pressure && exempt(i,1))
         % Add parameters if mitosis criterion is reached
         NumCells = NumCells + 1;
-
         % random based position mitosis
         if(~Field || rand_division)
             x(NumCells,1) = x(i,1) + (1 - 1/sqrt(2)) * (rand() - 0.5);
@@ -34,16 +33,17 @@ for i = 1:NumCells
         end
         % perpendicular to field based mitosis
         if(Field && ~rand_division)
-            x(NumCells, 1) = x(i,1) + Cradius(i,1)*rand() * sin(field_angle);
-            y(NumCells, 1) = y(i,1) - Cradius(i,1)*rand() * cos(field_angle);
-            x(i,1) = x(i,1) - Cradius(i,1)*rand() * sin(field_angle);
-            y(i, 1) = y(i,1) + Cradius(i,1)*rand() * cos(field_angle);
+            x(NumCells, 1) = x(i,1) + Cradius(i,1)*rand() * cos(field_angle);
+            y(NumCells, 1) = y(i,1) - Cradius(i,1)*rand() * sin(field_angle);
+            x(i,1) = x(i,1) - Cradius(i,1)*rand() * cos(field_angle);
+            y(i, 1) = y(i,1) + Cradius(i,1)*rand() * sin(field_angle);
             
             vx(NumCells, 1) = vels_med * cos(field_angle) + daughter_noise * pi * (rand() - 0.5);
             vy(NumCells, 1) = vels_med * sin(field_angle) + daughter_noise * pi * (rand() - 0.5);
             vx(i,1) = -vels_med * cos(field_angle) + daughter_noise * pi * (rand() - 0.5);
             vy(i,1) = -vels_med * sin(field_angle) + daughter_noise * pi * (rand() - 0.5);
         end
+        
         vel_ang(NumCells, 1) = atan2(vy(NumCells,1), vx(NumCells,1));
         Cradius(NumCells, 1) = Cradius(i,1) ./ sqrt(2);
         Cradius(i,1) = Cradius(i,1) ./ sqrt(2);
@@ -64,6 +64,9 @@ for i = 1:NumCells
         vy_time(1:time, NumCells) = vy_time(1:time, i);
         cell_lifetime(NumCells, 1) = 0;
         cell_lifetime(i, 1) = 0;
+        tmp_time(i,1) = 0;
+        tmp_time(NumCells,1) = 0;
+
 
     end % end mitosis conditional
 
