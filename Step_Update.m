@@ -28,7 +28,7 @@ for i = 1:NumCells
 
         %% Velocity update
         % Natural angle: mean angle of self and friends, influenced by noise
-        angNatural(i,1) = neibAngAvg(i,1) + eta * (rand() - 0.5)*pi;
+        angNatural(i,1) = neibAngAvg(i,1) + (eta * (rand() - 0.5)*pi)*sqrt(dt);
 
         % natural velocity of cell (excludes CC & CF)
         vxNat(i,1) = vels_med * cos(angNatural(i,1));
