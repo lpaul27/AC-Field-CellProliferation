@@ -9,12 +9,12 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     c_rec c_lig adh runTime Field xphi yphi w ExMax EyMax mu ...
     critRad Ccyclet critical_pressure daughter_noise Cell_std death_rate ...
     death_pressure chill dim2directionality displacement live polarhist dim1directionality...
-    Discrete Sine dim1displacement rand_division speed_decay                                                                                           %#ok<GVMIS>
-runs = 200;
-fields = [15, 30, 50, 75, 100,  200];
+    Discrete Sine dim1displacement rand_division speed_decay dim1noise dim2noise etaX etaY                                                                                         %#ok<GVMIS>
+runs = 5;
+fields = [0, 15, 30, 50, 75,  100, 200];
 
 dispAvg = zeros(length(fields),1);
-for z = 1:length(fields)
+for z = 1:7% length(fields) %length(fields)
     displacement_run = zeros(runs, 1);
     displacementAvg = zeros(runs,  1);
     for p = 1:runs
@@ -25,28 +25,28 @@ for z = 1:length(fields)
         runTime = 120;                           % total runTime of simulation
         dt = 5;                                  % time step
         NumCells = 35;                           % number of cells in simulation
-        vels_med = 0.083;                          % initial velocity param center point
+        vels_med = 0.083;                        % initial velocity param center point
         lbox = 1050;                             % size of the box particles are confined to
         R_boundary = lbox/6;                     % Sample domain size for cells to begin
         chill = 15;                              % chill time to suppress cell death
 
         %% Cell Parameters
         critRad = 12;                            % critical radius for mitosis
-        Ccyclet = 1500;                           % benchmark cell cycle time
+        Ccyclet = 1500;                          % benchmark cell cycle time
         death_rate = 1e-200;                     % Cell death rate
         death_pressure = 1000;                   % Pressure required for apoptosis
         critical_pressure = 0.05;                % Critical presssure for dormancy
         Cell_radius = 10;                        % fixed cell radius
         Cell_std = 0.08;                         % Standard Deviation of cell radii
-        speed_decay = 100;                        % speed decay rate for mitosis
+        speed_decay = 100;                       % speed decay rate for mitosis
 
         %% Cell-cell parameters
         k = 0.01;                               % constant in force repulsion calculation (~elasticity)
-        eta = 0.25;                            % noise strength in movement
+        eta = 0.25;                             % noise strength in movement
         daughter_noise = 0.1;                   % noise strength in mitosis separation
         nu = 1;                                 % friction factor
         mu = 1;                                 % electrical mobility
-        neighborWeight = 0.01;                 % group movement weighting
+        neighborWeight = 0.01;                  % group movement weighting
         c_rec = 0.9;                            % mean receptor concentration (normalized)
         c_lig = 0.9;                            % mean ligand concentration (normalized)
         adh = 0;                                % adhesive coefficient
@@ -56,8 +56,9 @@ for z = 1:length(fields)
         Field = 1;                              % Signals to time varying fields that field is on if 1
         rand_division = 0;                      % Enables field-directed mitosis
         Discrete = 0;                           % Enables Discrete field change
-        ExMax = fields(z) / 1875;                           % x field max
-        EyMax = 0 / 1875;                              % y field max
+        ExMax = fields(z) / 1875;               % x field max
+        EyMax = 0 / 1875;                       % y field max
+        absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
 
         % Sinusoidal parameters
         % f(t) = A sin(wt + o)                  % form
@@ -66,14 +67,19 @@ for z = 1:length(fields)
         xphi = 0;                               % x field offset
         yphi = 0;                               % y field offset
 
+        %% Simulation type parameters
+        dim1noise = 1;                          % signals type of noise (1D)
+        dim2noise = 0;                          % signals type of noise (2D)
+            etaX = eta / (1+ ExMax/ absE);         % X component of noise strength
+            etaY = eta / (1+ EyMax/ absE);         % Y component of noise strength
 
-        %% Plot parameters
+        %% Plot parameters  
 
         time_control = (1:runTime)';            % time axis for plotting
         R = zeros(NumCells, 1);                 % Red scale for plotting
         G = ones(NumCells, 1);                  % Green scale for plotting
         B = ones(NumCells, 1);                  % Blue scale for plotting
-
+        
         live = 0;                               % Enables Live Visualization
         dim1directionality = 0;                 % enables 1D Directionality plot
         dim2directionality = 0;                 % Enables 2D Directionality plot

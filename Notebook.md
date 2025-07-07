@@ -66,3 +66,10 @@ determined mathematically or tweaked slightly if mathematics cannot represent it
 The goal is to get the model consistant with data as well as explore new ideas while tweaking.
 One idea attained was the idea of "spring force" buildup as a cell approaches mitosis, acting as a buildup of
 excess repulsive force towards the two daughter cells, causing a slingshot of force away from one another.
+
+**7-7-2025**
+
+Considering a new aspect of the model which changes the effect of noise in direction of the electric field,
+Leads to higher displacement of lower electric fields and roughly the same at higher electric fields when 
+compared to the original model. Another aspect of consideration is fitting the parameters based on what
+the experimentalists found in their dataset.
