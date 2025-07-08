@@ -9,17 +9,20 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     c_rec c_lig adh runTime Field xphi yphi w ExMax EyMax mu ...
     critRad Ccyclet critical_pressure daughter_noise Cell_std death_rate ...
     death_pressure chill dim2directionality displacement live polarhist dim1directionality...
-    Discrete Sine dim1displacement rand_division speed_decay dim1noise dim2noise etaX etaY                                                                                         %#ok<GVMIS>
-runs = 5;
-fields = [0, 15, 30, 50, 75,  100, 200];
+    Discrete Sine dim1displacement rand_division speed_decay dim1noise dim2noise etaX etaY ...                                                                                        %#ok<GVMIS>
+    disphist
+
+ tStart = tic;
+runs = 1;
+fields = [0, 30, 50, 75,  100, 200];
 
 dispAvg = zeros(length(fields),1);
-for z = 1:7% length(fields) %length(fields)
+for z = 1:2
     displacement_run = zeros(runs, 1);
     displacementAvg = zeros(runs,  1);
     for p = 1:runs
         % Begin Simulation timer
-        tStart = tic;
+       
 
         %% Domain Parameters
         runTime = 120;                           % total runTime of simulation
@@ -42,21 +45,22 @@ for z = 1:7% length(fields) %length(fields)
 
         %% Cell-cell parameters
         k = 0.01;                               % constant in force repulsion calculation (~elasticity)
-        eta = 0.25;                             % noise strength in movement
+        noise = 0.26;
+        alpha = 0.5;                                  % noise strength in movement
         daughter_noise = 0.1;                   % noise strength in mitosis separation
         nu = 1;                                 % friction factor
         mu = 1;                                 % electrical mobility
         neighborWeight = 0.01;                  % group movement weighting
         c_rec = 0.9;                            % mean receptor concentration (normalized)
         c_lig = 0.9;                            % mean ligand concentration (normalized)
-        adh = 0;                                % adhesive coefficient
+        adh = 1e-4;                                % adhesive coefficient
 
         %% Cell-Field parameters
         % Discrete Parameters
         Field = 1;                              % Signals to time varying fields that field is on if 1
         rand_division = 0;                      % Enables field-directed mitosis
         Discrete = 0;                           % Enables Discrete field change
-        ExMax = fields(z) / 1875;               % x field max
+        ExMax = fields(z) / 3750;               % x field max
         EyMax = 0 / 1875;                       % y field max
         absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
 
@@ -69,6 +73,7 @@ for z = 1:7% length(fields) %length(fields)
 
         %% Simulation type parameters
         dim1noise = 1;                          % signals type of noise (1D)
+            eta = noise * (1+ alpha / (1/absE + 1)); 
         dim2noise = 0;                          % signals type of noise (2D)
             etaX = eta / (1+ ExMax/ absE);         % X component of noise strength
             etaY = eta / (1+ EyMax/ absE);         % Y component of noise strength
@@ -86,6 +91,7 @@ for z = 1:7% length(fields) %length(fields)
         dim1displacement = 0;                   % Enables 1D Displacement plot
         displacement = 0;                       % Enables 2D Displacement plot
         polarhist = 0;                          % Enables polar histogram plot
+        disphist =1;                           % enables displacement histogram plot
 
         %% Initialization of Variables
         % Preallocates values for optimal computation
@@ -237,9 +243,9 @@ for z = 1:7% length(fields) %length(fields)
 
 end
 
-Visualize(x_time,y_time, theta_time, time_control, displacementAvg);
+Visualize(x_time,y_time, theta_time, time_control, dispAvg);
 % end timer of full sequence
 toc(tStart);
 
-
+        
 % end simulation
