@@ -10,20 +10,20 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     critRad Ccyclet critical_pressure daughter_noise Cell_std death_rate ...
     death_pressure chill dim2directionality displacement live polarhist dim1directionality...
     Discrete Sine dim1displacement rand_division speed_decay dim1noise dim2noise etaX etaY ...                                                                                        %#ok<GVMIS>
-    disphist
+    disphist velocity_noise sigmax sigmay                                                                                                  %#ok<GVMIS> 
 
  tStart = tic;
-runs = 1;
+runs = 10;
 fields = [0, 30, 50, 75,  100, 200];
-
+directedness = zeros(length(fields),1);
 dispAvg = zeros(length(fields),1);
-for z = 1:2
+for z = 1:6
     displacement_run = zeros(runs, 1);
     displacementAvg = zeros(runs,  1);
+    dispruntheta = zeros(runs,1);
+
     for p = 1:runs
         % Begin Simulation timer
-       
-
         %% Domain Parameters
         runTime = 120;                           % total runTime of simulation
         dt = 5;                                  % time step
@@ -46,7 +46,8 @@ for z = 1:2
         %% Cell-cell parameters
         k = 0.01;                               % constant in force repulsion calculation (~elasticity)
         noise = 0.26;
-        alpha = 0.5;                                  % noise strength in movement
+        alpha = 10;                                  % noise strength in movement
+        emax = 1e-4;
         daughter_noise = 0.1;                   % noise strength in mitosis separation
         nu = 1;                                 % friction factor
         mu = 1;                                 % electrical mobility
@@ -60,9 +61,13 @@ for z = 1:2
         Field = 1;                              % Signals to time varying fields that field is on if 1
         rand_division = 0;                      % Enables field-directed mitosis
         Discrete = 0;                           % Enables Discrete field change
+        
         ExMax = fields(z) / 3750;               % x field max
         EyMax = 0 / 1875;                       % y field max
         absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
+        %mult = 0.03 / ((0.008 / absE) + 1);
+        %mult = 0.04*(1-exp(-absE/0.1));
+         %ExMax=mult;
 
         % Sinusoidal parameters
         % f(t) = A sin(wt + o)                  % form
@@ -73,11 +78,14 @@ for z = 1:2
 
         %% Simulation type parameters
         dim1noise = 1;                          % signals type of noise (1D)
-            eta = noise * (1+ alpha / (1/absE + 1)); 
+            %eta = noise * (1+ alpha / (emax/absE + 1)); 
+            eta = noise;
         dim2noise = 0;                          % signals type of noise (2D)
             etaX = eta / (1+ ExMax/ absE);         % X component of noise strength
             etaY = eta / (1+ EyMax/ absE);         % Y component of noise strength
-
+        velocity_noise = 0;                     % signals type of noise (velocity)
+            sigmax = eta * ExMax / (1 + absE);  % velocity based noise parameter (x)
+            sigmay = eta * EyMax / (1 + absE);  % velocity based noise parameter (y)
         %% Plot parameters  
 
         time_control = (1:runTime)';            % time axis for plotting
@@ -234,16 +242,20 @@ for z = 1:2
         %% Static Plot Visualization
         xavg = mean(abs(x_time - x_time(1,:)),2);
         yavg = mean(abs(y_time - y_time(1,:)),2);
-
-        displacementrunx = abs(xavg(runTime, 1) - xavg(1,1)) / runTime;
-        displacementruny = abs(yavg(runTime, 1) - yavg(1,1)) / runTime;
+        displacementrunx = (xavg(runTime, 1) - xavg(1,1)) / runTime;
+        displacementruny = (yavg(runTime, 1) - yavg(1,1)) / runTime;
         displacement_run(p,1) = sqrt(displacementruny^2 + displacementrunx^2);
+        
+        x_raw = (x_time - x_time(1,:));
+        y_raw = (y_time - y_time(1,:));
+        dispruntheta = mean(cos(atan2(y_raw(runTime,:) , x_raw(runTime, :))));
+
     end
     dispAvg(z,1) = mean(displacement_run);
-
+    directedness(z,1) = (dispruntheta);
 end
 
-Visualize(x_time,y_time, theta_time, time_control, dispAvg);
+Visualize(x_time,y_time, theta_time, time_control, dispAvg, directedness);
 % end timer of full sequence
 toc(tStart);
 

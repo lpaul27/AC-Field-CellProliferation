@@ -1,4 +1,4 @@
-function [] = Visualize(x_time,y_time, theta_time, time_control, dispAvg)
+function [] = Visualize(x_time,y_time, theta_time, time_control, dispAvg, directedness)
 %% Function for static visualization
 % Optimal for large sets of data
 
@@ -34,8 +34,8 @@ if(~live)
     if(displacement)
 
         %calculations
-        x_avg = mean(x_time, 2);
-        y_avg = mean(y_time, 2);
+        x_avg = mean((x_time - x_time(1,:)), 2);
+        y_avg = mean((y_time - y_time(1,:)), 2);
 
         %plotting
         figure
@@ -146,23 +146,6 @@ if(~live)
 
     %% distribution of data
     if(disphist)
-        %         groups = {'No EF', '30mV/mm', '50mV/mm', '75mV/mm, 100mV/mm, 200mV/mm'};
-        %         data_sim = dispAvg(:);
-        %         data_exp = [0.45;0.7;1.3;1.25;1.45;1.6];
-        %         data = [data_sim; data_exp];
-        %
-        %         figure;
-        %         b = bar(data);
-        %         %b(1).FaceColor = [0 0.5 1];   % blue
-        %         %b(2).FaceColor = [1 0.4 0];   % orange
-        %         set(gca, 'XTickLabel', groups, 'XTick', 1:length(groups), 'XTickLabelRotation', 45);
-        %         ylabel('Displacement speed (\mum/min)');
-        %         ylim([0 3]);
-        %
-        %         legend('Simulation', 'Experiment')
-        %
-        %         box on;
-        % Categories (x-axis labels)
         
         groups = {'No EF', '30mV/mm', '50mV/mm', '75mV/mm', '100mV/mm', '200mV/mm'};
 
@@ -189,9 +172,33 @@ if(~live)
         legend({'Simulation', 'Experiment'}, 'Location', 'northwest');
         box on;
         set(gca,'fontsize',14);
-
-
     end
+    if(1)
+        groups = {'No EF', '30mV/mm', '50mV/mm', '75mV/mm', '100mV/mm', '200mV/mm'};
 
+        % Example data
+        data_sim = directedness(:, 1);  % Make sure dispAvg is a column vector
+        data_exp = [0; 0; 0; 0; 0; 0];
+
+        % Combine into matrix (columns = datasets, rows = groups)
+        data = [data_sim, data_exp];  % [6x2] matrix
+
+        % Create grouped bar chart
+        figure;
+        b = bar(data);  % grouped bar by default
+
+        % Set colors (optional)
+        b(1).FaceColor = [0 0.5 1];   % blue
+        b(2).FaceColor = [1 0.4 0];   % orange
+
+        % Label settings
+        set(gca, 'XTickLabel', groups, 'XTick', 1:length(groups), 'XTickLabelRotation', 45);
+        ylabel('Directedness');
+        ylim([0 3]);
+
+        legend({'Simulation', 'Experiment'}, 'Location', 'northwest');
+        box on;
+        set(gca,'fontsize',14);
+    end
 end % end live conditional
 end % end function

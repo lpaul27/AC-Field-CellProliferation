@@ -39,7 +39,7 @@ if(~Field && ~Discrete)
     Ey_strength = 0;
 end
 
-[X,Y] = meshgrid(0.1:2:lbox+0.5);
+[X,Y] = meshgrid(0.1:6:lbox+0.5);
 u=(Ex_strength)*ones(size(X));
 v= (Ey_strength)* ones(size(Y));
 end % end function
