@@ -73,3 +73,9 @@ Considering a new aspect of the model which changes the effect of noise in direc
 Leads to higher displacement of lower electric fields and roughly the same at higher electric fields when 
 compared to the original model. Another aspect of consideration is fitting the parameters based on what
 the experimentalists found in their dataset.
+
+**7-9-2025**
+
+Working towards developing a model which discovers the saturation in the displacement and directedness graphs.  
+Currently considering a variable noise in velocity rather than angle. So far no luck. Thinking towards possibly
+ implemenitng the torque model into the dynamics of the system rather than force model of electrioc field.
