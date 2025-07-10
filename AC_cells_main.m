@@ -10,11 +10,12 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     critRad Ccyclet critical_pressure daughter_noise Cell_std death_rate ...
     death_pressure chill dim2directionality displacement live polarhist dim1directionality...
     Discrete Sine dim1displacement rand_division speed_decay dim1noise dim2noise etaX etaY ...                                                                                        %#ok<GVMIS>
-    disphist velocity_noise sigmax sigmay                                                                                                  %#ok<GVMIS> 
+    disphist velocity_noise sigmax sigmay directednessplot                                                                                                 %#ok<GVMIS> 
 
  tStart = tic;
 runs = 10;
 fields = [0, 30, 50, 75,  100, 200];
+noises = [0.26, 0.24, 0.2, 0.28, 0.32, 0.56];
 directedness = zeros(length(fields),1);
 dispAvg = zeros(length(fields),1);
 for z = 1:6
@@ -45,7 +46,7 @@ for z = 1:6
 
         %% Cell-cell parameters
         k = 0.01;                               % constant in force repulsion calculation (~elasticity)
-        noise = 0.26;
+        noise = noises(z);
         alpha = 10;                                  % noise strength in movement
         emax = 1e-4;
         daughter_noise = 0.1;                   % noise strength in mitosis separation
@@ -100,6 +101,7 @@ for z = 1:6
         displacement = 0;                       % Enables 2D Displacement plot
         polarhist = 0;                          % Enables polar histogram plot
         disphist =1;                           % enables displacement histogram plot
+        directednessplot = 1;                   % enables directedness histogram plot
 
         %% Initialization of Variables
         % Preallocates values for optimal computation

@@ -23,7 +23,7 @@ function [] = Visualize(x_time,y_time, theta_time, time_control, dispAvg, direct
 
 %% Begin Function
 global NumCells runTime displacement live dim2directionality polarhist dim1directionality dim1displacement...         %#ok<GVMIS>
-    disphist
+    disphist directednessplot
 
 
 % runs nothing if live simulation is on
@@ -173,12 +173,12 @@ if(~live)
         box on;
         set(gca,'fontsize',14);
     end
-    if(1)
+    if(directednessplot)
         groups = {'No EF', '30mV/mm', '50mV/mm', '75mV/mm', '100mV/mm', '200mV/mm'};
 
         % Example data
         data_sim = directedness(:, 1);  % Make sure dispAvg is a column vector
-        data_exp = [0; 0; 0; 0; 0; 0];
+        data_exp = [0.05; 0.4; 0.5; 0.6; 0.8; 0.9];
 
         % Combine into matrix (columns = datasets, rows = groups)
         data = [data_sim, data_exp];  % [6x2] matrix
