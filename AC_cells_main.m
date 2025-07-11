@@ -10,7 +10,7 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     critRad Ccyclet critical_pressure daughter_noise Cell_std death_rate ...
     death_pressure chill dim2directionality displacement live polarhist dim1directionality...
     Discrete Sine dim1displacement rand_division speed_decay dim1noise dim2noise etaX etaY ...                                                                                        %#ok<GVMIS>
-    disphist velocity_noise sigmax sigmay directednessplot                                                                                                 %#ok<GVMIS> 
+    disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise                                                                                                %#ok<GVMIS> 
 
 tStart = tic;
 runs = 1;
@@ -90,6 +90,8 @@ for z = 1:6
         velocity_noise = 0;                     % signals type of noise (velocity)
             sigmax = eta * ExMax / (1 + absE);  % velocity based noise parameter (x)
             sigmay = eta * EyMax / (1 + absE);  % velocity based noise parameter (y)
+        velocity_mag_noise = 0;                 % signals type of noise (velocity magnitude)
+            
         %% Plot parameters  
 
         time_control = (1:runTime)';            % time axis for plotting

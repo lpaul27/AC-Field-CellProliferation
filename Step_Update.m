@@ -6,7 +6,7 @@ function [xf, yf, vxf, vyf, cell_lifetime, tmp_time] = Step_Update(x0, y0, vx0, 
 
 % Declaration of Globals
 global NumCells dt eta vels_med critRad runTime speed_decay dim2noise dim1noise etaX etaY velocity_noise ...
-    sigmax sigmay %#ok<GVMIS>
+    sigmax sigmay velocity_mag_noise                                        %#ok<GVMIS>
 
 %% Preallocation of updated values
 vxf = zeros(NumCells,1);
@@ -48,7 +48,12 @@ for i = 1:NumCells
             vxNat(i,1) = vmag * cos(angNatural(i,1)) + sigmay * (rand() - 0.5)* pi * sqrt(dt);
             vyNat(i,1) = vmag * sin(angNatural(i,1)) + sigmax * (rand() - 0.5)* pi * sqrt(dt);
         end
-
+        
+        if(velocity_mag_noise)
+            angNatural(i,1) = neibAngAvg(i,1);
+            vxNat(i,1) = (vels_med + etaX * (rand() - 0.5)* pi * sqrt(dt))*cos(angNatural(i,1));
+            vyNat(i,1) = (vels_med + etaY * (rand() - 0.5)* pi * sqrt(dt))*sin(angNatural(i,1));
+        end
         % New velocity vector based on how interaction forces affected angles
         % (componentwise)
         vxf(i, 1) = (vxNat(i,1) + Fx(i,1))* dt;     % x component
