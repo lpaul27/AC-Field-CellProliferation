@@ -45,8 +45,8 @@ for i = 1:NumCells
 
         if(velocity_noise)
             angNatural(i,1) = neibAngAvg(i,1);
-            vxNat(i,1) = vels_med * cos(angNatural(i,1)) + sigmay * (rand() - 0.5)* pi * sqrt(dt);
-            vyNat(i,1) = vels_med * sin(angNatural(i,1)) + sigmax * (rand() - 0.5)* pi * sqrt(dt);
+            vxNat(i,1) = vmag * cos(angNatural(i,1)) + sigmay * (rand() - 0.5)* pi * sqrt(dt);
+            vyNat(i,1) = vmag * sin(angNatural(i,1)) + sigmax * (rand() - 0.5)* pi * sqrt(dt);
         end
 
         % New velocity vector based on how interaction forces affected angles

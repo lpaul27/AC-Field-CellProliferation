@@ -194,7 +194,7 @@ if(~live)
         % Label settings
         set(gca, 'XTickLabel', groups, 'XTick', 1:length(groups), 'XTickLabelRotation', 45);
         ylabel('Directedness');
-        ylim([0 3]);
+        ylim([-0.2 1.2]);
 
         legend({'Simulation', 'Experiment'}, 'Location', 'northwest');
         box on;

@@ -12,10 +12,13 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     Discrete Sine dim1displacement rand_division speed_decay dim1noise dim2noise etaX etaY ...                                                                                        %#ok<GVMIS>
     disphist velocity_noise sigmax sigmay directednessplot                                                                                                 %#ok<GVMIS> 
 
- tStart = tic;
-runs = 10;
+tStart = tic;
+runs = 1;
 fields = [0, 30, 50, 75,  100, 200];
 noises = [0.26, 0.24, 0.2, 0.28, 0.32, 0.56];
+forceScale = [1,1.11,1.4,0.85,0.77,0.45];
+noiseX = [0.28,0.28,0.23,0.33,0.37,0.61];
+
 directedness = zeros(length(fields),1);
 dispAvg = zeros(length(fields),1);
 for z = 1:6
@@ -30,7 +33,7 @@ for z = 1:6
         dt = 5;                                  % time step
         NumCells = 35;                           % number of cells in simulation
         vels_med = 0.083;                        % initial velocity param center point
-        lbox = 1050;                             % size of the box particles are confined to
+        lbox = 1550;                             % size of the box particles are confined to
         R_boundary = lbox/6;                     % Sample domain size for cells to begin
         chill = 15;                              % chill time to suppress cell death
 
@@ -46,7 +49,7 @@ for z = 1:6
 
         %% Cell-cell parameters
         k = 0.01;                               % constant in force repulsion calculation (~elasticity)
-        noise = noises(z);
+        noise = 0.26;
         alpha = 10;                                  % noise strength in movement
         emax = 1e-4;
         daughter_noise = 0.1;                   % noise strength in mitosis separation
@@ -78,12 +81,12 @@ for z = 1:6
         yphi = 0;                               % y field offset
 
         %% Simulation type parameters
-        dim1noise = 1;                          % signals type of noise (1D)
+        dim1noise = 0;                          % signals type of noise (1D)
             %eta = noise * (1+ alpha / (emax/absE + 1)); 
             eta = noise;
-        dim2noise = 0;                          % signals type of noise (2D)
-            etaX = eta / (1+ ExMax/ absE);         % X component of noise strength
-            etaY = eta / (1+ EyMax/ absE);         % Y component of noise strength
+        dim2noise = 1;                          % signals type of noise (2D)
+            etaX = 0.26;         % X component of noise strength
+            etaY = 0.9;         % Y component of noise strength
         velocity_noise = 0;                     % signals type of noise (velocity)
             sigmax = eta * ExMax / (1 + absE);  % velocity based noise parameter (x)
             sigmay = eta * EyMax / (1 + absE);  % velocity based noise parameter (y)
