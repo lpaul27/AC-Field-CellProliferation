@@ -13,11 +13,13 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise                                                                                                %#ok<GVMIS> 
 
 tStart = tic;
-runs = 10;
+runs = 60;
 fields = [0, 30, 50, 75,  100, 200];
 noises = [0.26, 0.24, 0.2, 0.28, 0.32, 0.56];
 forceScale = [1,1.11,1.4,0.85,0.77,0.45];
 noiseX = [0.28,0.28,0.23,0.33,0.37,0.61];
+v0 = [0.083, 0.11, 0.185, 0.07, 0.059, 0.026];
+nufric = [1, 1.15, 1.43, 0.93, 0.81,0.46];
 
 directedness = zeros(length(fields),1);
 dispAvg = zeros(length(fields),1);
@@ -32,7 +34,7 @@ for z = 1:6
         runTime = 120;                           % total runTime of simulation
         dt = 5;                                  % time step
         NumCells = 35;                           % number of cells in simulation
-        vels_med = 0.083;                        % initial velocity param center point
+        vels_med = 0.083;                         % initial velocity param center point
         lbox = 1550;                             % size of the box particles are confined to
         R_boundary = lbox/6;                     % Sample domain size for cells to begin
         chill = 15;                              % chill time to suppress cell death
@@ -49,11 +51,11 @@ for z = 1:6
 
         %% Cell-cell parameters
         k = 0.01;                               % constant in force repulsion calculation (~elasticity)
-        noise = 0.27;
+        noise = 0.28;
         alpha = 10;                                  % noise strength in movement
         emax = 1e-4;
         daughter_noise = 0.1;                   % noise strength in mitosis separation
-        nu = 1;                                 % friction factor
+        nu = nufric(z);                                 % friction factor
         mu = 1;                                 % electrical mobility
         neighborWeight = 0.01;                  % group movement weighting
         c_rec = 0.9;                            % mean receptor concentration (normalized)
@@ -106,7 +108,7 @@ for z = 1:6
         displacement = 0;                       % Enables 2D Displacement plot
         polarhist = 0;                          % Enables polar histogram plot
         disphist =1;                           % enables displacement histogram plot
-        directednessplot = 0;                   % enables directedness histogram plot
+        directednessplot = 1;                   % enables directedness histogram plot
 
         %% Initialization of Variables
         % Preallocates values for optimal computation
@@ -202,8 +204,8 @@ for z = 1:6
             Steptimer = tic;
 
             % Calculate net force; exclude dead cells
-            Fx_net = (nu*Fx + mu*EF_x) .* exempt;
-            Fy_net = (nu*Fy + mu*EF_y) .* exempt;
+            Fx_net = nu*(Fx + mu*EF_x) .* exempt;
+            Fy_net = nu*(Fy + mu*EF_y) .* exempt;
 
             % Calculate the net pressure
             Pressure = Epressure + Cpressure;
