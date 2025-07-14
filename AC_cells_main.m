@@ -13,7 +13,7 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise                                                                                                %#ok<GVMIS> 
 
 tStart = tic;
-runs = 1;
+runs = 10;
 fields = [0, 30, 50, 75,  100, 200];
 noises = [0.26, 0.24, 0.2, 0.28, 0.32, 0.56];
 forceScale = [1,1.11,1.4,0.85,0.77,0.45];
@@ -49,7 +49,7 @@ for z = 1:6
 
         %% Cell-cell parameters
         k = 0.01;                               % constant in force repulsion calculation (~elasticity)
-        noise = 0.26;
+        noise = 0.27;
         alpha = 10;                                  % noise strength in movement
         emax = 1e-4;
         daughter_noise = 0.1;                   % noise strength in mitosis separation
@@ -58,7 +58,7 @@ for z = 1:6
         neighborWeight = 0.01;                  % group movement weighting
         c_rec = 0.9;                            % mean receptor concentration (normalized)
         c_lig = 0.9;                            % mean ligand concentration (normalized)
-        adh = 1e-4;                                % adhesive coefficient
+        adh = 0;                                % adhesive coefficient
 
         %% Cell-Field parameters
         % Discrete Parameters
@@ -67,8 +67,8 @@ for z = 1:6
         Discrete = 0;                           % Enables Discrete field change
         
         ExMax = fields(z) / 3750;               % x field max
-        EyMax = 0 / 1875;                       % y field max
-        absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
+        EyMax = 0;                             % y field max
+        absE = sqrt(EyMax^2 + ExMax^2);                     % magnitude of field
         %mult = 0.03 / ((0.008 / absE) + 1);
         %mult = 0.04*(1-exp(-absE/0.1));
          %ExMax=mult;
@@ -81,12 +81,12 @@ for z = 1:6
         yphi = 0;                               % y field offset
 
         %% Simulation type parameters
-        dim1noise = 0;                          % signals type of noise (1D)
+        dim1noise = 1;                          % signals type of noise (1D)
             %eta = noise * (1+ alpha / (emax/absE + 1)); 
-            eta = noise;
-        dim2noise = 1;                          % signals type of noise (2D)
-            etaX = 0.26;         % X component of noise strength
-            etaY = 0.9;         % Y component of noise strength
+            eta = 0.27;
+        dim2noise = 0;                          % signals type of noise (2D)
+            etaX = eta / 2;         % X component of noise strength
+            etaY = 3*eta;         % Y component of noise strength
         velocity_noise = 0;                     % signals type of noise (velocity)
             sigmax = eta * ExMax / (1 + absE);  % velocity based noise parameter (x)
             sigmay = eta * EyMax / (1 + absE);  % velocity based noise parameter (y)
@@ -106,7 +106,7 @@ for z = 1:6
         displacement = 0;                       % Enables 2D Displacement plot
         polarhist = 0;                          % Enables polar histogram plot
         disphist =1;                           % enables displacement histogram plot
-        directednessplot = 1;                   % enables directedness histogram plot
+        directednessplot = 0;                   % enables directedness histogram plot
 
         %% Initialization of Variables
         % Preallocates values for optimal computation
@@ -256,7 +256,6 @@ for z = 1:6
         x_raw = (x_time - x_time(1,:));
         y_raw = (y_time - y_time(1,:));
         dispruntheta = mean(cos(atan2(y_raw(runTime,:) , x_raw(runTime, :))));
-
     end
     dispAvg(z,1) = mean(displacement_run);
     directedness(z,1) = (dispruntheta);
