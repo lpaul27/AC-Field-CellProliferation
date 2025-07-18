@@ -20,8 +20,8 @@ for i = 1:NumCells
     
     % Force is calculated based on the range of important values to the
     % cell
-    EF_x(i) = sum(u(coord_sub)) ./ length(u(coord_sub));
-    EF_y(i) = sum(v(coord_sub)) ./ length(v(coord_sub));
+    EF_x(i) = -sum(u(coord_sub)) ./ length(u(coord_sub));
+    EF_y(i) = -sum(v(coord_sub)) ./ length(v(coord_sub));
 end
 % calculate "electric field pressure"
 Epressure = sqrt(EF_x.^2 + EF_y.^2) ./ (pi*Cradius);

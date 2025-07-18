@@ -13,7 +13,7 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise                                                                                                %#ok<GVMIS> 
 
 tStart = tic;
-runs = 60;
+runs = 1;
 fields = [0, 30, 50, 75,  100, 200];
 noises = [0.26, 0.24, 0.2, 0.28, 0.32, 0.56];
 forceScale = [1,1.11,1.4,0.85,0.77,0.45];
@@ -23,7 +23,7 @@ nufric = [1, 1.15, 1.43, 0.93, 0.81,0.46];
 
 directedness = zeros(length(fields),1);
 dispAvg = zeros(length(fields),1);
-for z = 1:6
+for z = 1:1
     displacement_run = zeros(runs, 1);
     displacementAvg = zeros(runs,  1);
     dispruntheta = zeros(runs,1);
@@ -41,7 +41,7 @@ for z = 1:6
 
         %% Cell Parameters
         critRad = 12;                            % critical radius for mitosis
-        Ccyclet = 1500;                          % benchmark cell cycle time
+        Ccyclet = 1300;                          % benchmark cell cycle time
         death_rate = 1e-200;                     % Cell death rate
         death_pressure = 1000;                   % Pressure required for apoptosis
         critical_pressure = 0.05;                % Critical presssure for dormancy
@@ -55,7 +55,7 @@ for z = 1:6
         alpha = 10;                                  % noise strength in movement
         emax = 1e-4;
         daughter_noise = 0.1;                   % noise strength in mitosis separation
-        nu = nufric(z);                                 % friction factor
+        nu = nufric(1);                                 % friction factor
         mu = 1;                                 % electrical mobility
         neighborWeight = 0.01;                  % group movement weighting
         c_rec = 0.9;                            % mean receptor concentration (normalized)
@@ -68,7 +68,7 @@ for z = 1:6
         rand_division = 0;                      % Enables field-directed mitosis
         Discrete = 0;                           % Enables Discrete field change
         
-        ExMax = fields(z) / 3750;               % x field max
+        ExMax = fields(6) / 3750;               % x field max
         EyMax = 0;                             % y field max
         absE = sqrt(EyMax^2 + ExMax^2);                     % magnitude of field
         %mult = 0.03 / ((0.008 / absE) + 1);
@@ -105,10 +105,10 @@ for z = 1:6
         dim1directionality = 0;                 % enables 1D Directionality plot
         dim2directionality = 0;                 % Enables 2D Directionality plot
         dim1displacement = 0;                   % Enables 1D Displacement plot
-        displacement = 0;                       % Enables 2D Displacement plot
+        displacement = 1;                       % Enables 2D Displacement plot
         polarhist = 0;                          % Enables polar histogram plot
-        disphist =1;                           % enables displacement histogram plot
-        directednessplot = 1;                   % enables directedness histogram plot
+        disphist =0;                           % enables displacement histogram plot
+        directednessplot = 0;                   % enables directedness histogram plot
 
         %% Initialization of Variables
         % Preallocates values for optimal computation
@@ -235,7 +235,7 @@ for z = 1:6
                 cla
                 set(gcf,'doublebuffer','on')
                 hold on;
-                skip_nth =14;
+                skip_nth =51;
                 quiver(x_efield_plot(1:skip_nth:end),y_efield_plot(1:skip_nth:end),scale_efield*u_efield_plot(1:skip_nth:end),scale_efield*v_efield_plot(1:skip_nth:end), 'Color', [1, 0., 0],   'LineWidth', 1., 'MaxHeadSize', 0.9);
                 hold on;
                 quiver(x,y,Cradius .* vx./(0.5*v_result_norm),Cradius.*vy./(0.5*v_result_norm), 'Color',[0, 0, 0], 'MarkerSize', 10, 'LineWidth', 1.5,  'AutoScale', 'off') ;

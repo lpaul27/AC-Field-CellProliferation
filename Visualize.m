@@ -23,7 +23,7 @@ function [] = Visualize(x_time,y_time, theta_time, time_control, dispAvg, direct
 
 %% Begin Function
 global NumCells runTime displacement live dim2directionality polarhist dim1directionality dim1displacement...         %#ok<GVMIS>
-    disphist directednessplot
+    disphist directednessplot ExMax
 
 
 % runs nothing if live simulation is on
@@ -47,6 +47,11 @@ if(~live)
         yline(0, '-');
         xlabel('x-displacement (a.u)')
         ylabel('y-displacement (a.u)')
+        print1 = sprintf('%.0f mV/mm', (ExMax * 3750));
+        lgd = legend(print1);
+        title(lgd,'EF strength');
+        xlim([-200, 200]);
+        ylim([-200,200]);
     end
 
     %% 1D Directionality Graph
@@ -70,6 +75,8 @@ if(~live)
         xline(XriseTime, ':', print1, 'Color', 'b', 'LineWidth',1);
         xline(XfallTime, ':', print2, 'Color', 'b', 'LineWidth',1);
         yline(0);
+        yline(1, '--');
+        yline(-1, '--');
         txt1 = {'FIELD RIGHT'}; txt2 = {'FIELD LEFT'};
         text((runTime /4), 1.1, txt1);
         text((5*runTime /8), 1.1, txt2);
@@ -141,7 +148,7 @@ if(~live)
 
         nexttile
         plot((x_time(floor(runTime/2) + 1: runTime, :) - x_time(runTime / 2,:)), (y_time(floor(runTime / 2) + 1: runTime, :) - y_time(runTime/ 2 + 1,:)))
-        title('Field Direction: +y')
+        title('Field Direction: -x')
     end % end single axis directionality
 
     %% distribution of data
