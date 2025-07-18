@@ -23,7 +23,7 @@ function [] = Visualize(x_time,y_time, theta_time, time_control, dispAvg, direct
 
 %% Begin Function
 global NumCells runTime displacement live dim2directionality polarhist dim1directionality dim1displacement...         %#ok<GVMIS>
-    disphist directednessplot ExMax
+    disphist directednessplot ExMax displacement3by2
 
 
 % runs nothing if live simulation is on
@@ -153,7 +153,7 @@ if(~live)
 
     %% distribution of data
     if(disphist)
-        
+
         groups = {'No EF', '30mV/mm', '50mV/mm', '75mV/mm', '100mV/mm', '200mV/mm'};
 
         % Example data
@@ -206,6 +206,28 @@ if(~live)
         legend({'Simulation', 'Experiment'}, 'Location', 'northwest');
         box on;
         set(gca,'fontsize',14);
+    end
+
+    if(displacement3by2)
+        tiledlayout(3,2);
+
+        %plotting
+
+        % tile 1:
+        for i=1:6
+            nexttile
+            plot((x_time(:,:,i) - x_time(1,:,i)), (y_time(:,:,i) - y_time(1,:,i)))
+            hold on;
+            xline(0, '-');
+            yline(0, '-');
+            xlabel('x-displacement (a.u)')
+            ylabel('y-displacement (a.u)')
+            print1 = sprintf('%.0f mV/mm', (Ex_strength));
+            lgd = legend(print1);
+            title(lgd,'EF strength');
+            xlim([-200, 200]);
+            ylim([-200,200]);
+        end
     end
 end % end live conditional
 end % end function

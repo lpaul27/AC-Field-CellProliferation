@@ -10,7 +10,7 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     critRad Ccyclet critical_pressure daughter_noise Cell_std death_rate ...
     death_pressure chill dim2directionality displacement live polarhist dim1directionality...
     Discrete Sine dim1displacement rand_division speed_decay dim1noise dim2noise etaX etaY ...                                                                                        %#ok<GVMIS>
-    disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise                                                                                                %#ok<GVMIS> 
+    disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise displacement3by2                                                                                                %#ok<GVMIS> 
 
 tStart = tic;
 runs = 1;
@@ -23,7 +23,7 @@ nufric = [1, 1.15, 1.43, 0.93, 0.81,0.46];
 
 directedness = zeros(length(fields),1);
 dispAvg = zeros(length(fields),1);
-for z = 1:1
+for z = 1:6
     displacement_run = zeros(runs, 1);
     displacementAvg = zeros(runs,  1);
     dispruntheta = zeros(runs,1);
@@ -68,7 +68,7 @@ for z = 1:1
         rand_division = 0;                      % Enables field-directed mitosis
         Discrete = 0;                           % Enables Discrete field change
         
-        ExMax = fields(6) / 3750;               % x field max
+        ExMax = fields(z) / 3750;               % x field max
         EyMax = 0;                             % y field max
         absE = sqrt(EyMax^2 + ExMax^2);                     % magnitude of field
         %mult = 0.03 / ((0.008 / absE) + 1);
@@ -101,14 +101,15 @@ for z = 1:1
         G = ones(NumCells, 1);                  % Green scale for plotting
         B = ones(NumCells, 1);                  % Blue scale for plotting
         
-        live = 0;                               % Enables Live Visualization
-        dim1directionality = 0;                 % enables 1D Directionality plot
+        live = 1;                               % Enables Live Visualization
+        dim1directionality = 1;                 % enables 1D Directionality plot
         dim2directionality = 0;                 % Enables 2D Directionality plot
         dim1displacement = 0;                   % Enables 1D Displacement plot
-        displacement = 1;                       % Enables 2D Displacement plot
+        displacement = 0;                       % Enables 2D Displacement plot
         polarhist = 0;                          % Enables polar histogram plot
         disphist =0;                           % enables displacement histogram plot
         directednessplot = 0;                   % enables directedness histogram plot
+        displacement3by2 = 1;                   % enables displacement of all fields in a 3x2
 
         %% Initialization of Variables
         % Preallocates values for optimal computation
