@@ -1,4 +1,4 @@
-function [] = Visualize(x_time,y_time, theta_time, time_control, dispAvg, directedness)
+function [] = Visualize(x_time,y_time, theta_time, time_control, dispAvg, directedness, fields, cell_posData)
 %% Function for static visualization
 % Optimal for large sets of data
 
@@ -23,10 +23,14 @@ function [] = Visualize(x_time,y_time, theta_time, time_control, dispAvg, direct
 
 %% Begin Function
 global NumCells runTime displacement live dim2directionality polarhist dim1directionality dim1displacement...         %#ok<GVMIS>
-    disphist directednessplot ExMax displacement3by2
+    disphist directednessplot ExMax displacement3by2 %#ok<GVMIS> 
 
-
+fieldboundslx = [-150, -200, -200, -200, -300, -300, -300];
+fieldboundshx = [150, 100, 100, 50, 50, 50];
+fieldboundshy = [150, 150, 150,  100, 100, 100];
+fieldboundsly = [-150, -150, -150, -100, -100, -100];
 % runs nothing if live simulation is on
+
 if(~live)
     %% Displacement track graph
     % Visualization of cell proliferation
@@ -209,24 +213,23 @@ if(~live)
     end
 
     if(displacement3by2)
-        tiledlayout(3,2);
+        tiledlayout(2,3);
 
         %plotting
 
         % tile 1:
         for i=1:6
             nexttile
-            plot((x_time(:,:,i) - x_time(1,:,i)), (y_time(:,:,i) - y_time(1,:,i)))
+            plot(cell_posData(i).posx, cell_posData(i).posy)
             hold on;
             xline(0, '-');
             yline(0, '-');
-            xlabel('x-displacement (a.u)')
-            ylabel('y-displacement (a.u)')
-            print1 = sprintf('%.0f mV/mm', (Ex_strength));
-            lgd = legend(print1);
-            title(lgd,'EF strength');
-            xlim([-200, 200]);
-            ylim([-200,200]);
+            xlabel('x-position (\mum)')
+            ylabel('y-position (\mum)')
+            print1 = sprintf('EF Strength \n %.0f mV/mm', (fields(i)));
+            title(print1);
+            xlim([fieldboundslx(i), fieldboundshx(i)]);
+            ylim([fieldboundsly(i), fieldboundshy(i)]);
         end
     end
 end % end live conditional
