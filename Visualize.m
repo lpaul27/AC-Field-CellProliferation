@@ -23,7 +23,7 @@ function [] = Visualize(x_time,y_time, theta_time, time_control, dispAvg, direct
 
 %% Begin Function
 global NumCells runTime displacement live dim2directionality polarhist dim1directionality dim1displacement...         %#ok<GVMIS>
-    disphist directednessplot ExMax displacement3by2 %#ok<GVMIS> 
+    disphist directednessplot ExMax displacement3by2 %#ok<GVMIS>
 
 fieldboundslx = [-150, -200, -200, -200, -300, -300, -300];
 fieldboundshx = [150, 100, 100, 50, 50, 50];
@@ -71,20 +71,24 @@ if(~live)
 
         figure
         plot(time_control, directionalityX)
-        xlabel('Time (steps)');  ylabel('Directionality (\Phi)');
-        xline((runTime / 2),'-.', 'TURN', 'LineWidth',2);
+        xlabel('Time (steps)', 'FontSize', 18);  ylabel('Directionality (\Phi_{x})', 'FontSize', 18);
+        xline((runTime / 2),'-.', 'TURN', 'LineWidth',2, 'FontSize', 14);
         ylim([-1.2,1.2]); xlim([0, runTime]);
         print1 = sprintf('X Rise: %f', XriseTime);
         print2 = sprintf('X Fall: %f', (XfallTime - (runTime / 2)));
-        xline(XriseTime, ':', print1, 'Color', 'b', 'LineWidth',1);
-        xline(XfallTime, ':', print2, 'Color', 'b', 'LineWidth',1);
+        %xline(XriseTime, ':', print1, 'Color', 'b', 'LineWidth',1);
+        %xline(XfallTime, ':', print2, 'Color', 'b', 'LineWidth',1);
         yline(0);
         yline(1, '--');
         yline(-1, '--');
         txt1 = {'FIELD RIGHT'}; txt2 = {'FIELD LEFT'};
-        text((runTime /4), 1.1, txt1);
-        text((5*runTime /8), 1.1, txt2);
-
+        text((runTime /9), 1.1, txt1, 'FontSize',14);
+        text((5*runTime /8), 1.1, txt2, 'FontSize',14);
+        %set(gca, 'FontSize', 18, 'Color',[1, 1, 1])
+        set(gcf,'Color','white');
+        set(gca, 'FontSize', 18);
+        %print(gcf,'myplot.pdf','-dpdf', '-r500');
+        print(gcf,'-dpdf', '-loose', 'opengl', '-r500',[pwd\'myplot']);
     end
     %% 2D Directionality Graph
     % Visualization of allignent to a direction
@@ -163,20 +167,21 @@ if(~live)
         % Example data
         data_sim = dispAvg(:, 1);  % Make sure dispAvg is a column vector
         data_exp = [0.45; 0.8; 1.35; 1.3; 1.45; 1.6];
+        electric_fields = [0,30, 50, 75, 100, 200];
 
         % Combine into matrix (columns = datasets, rows = groups)
         data = [data_sim, data_exp];  % [6x2] matrix
 
         % Create grouped bar chart
         figure;
-        b = bar(data);  % grouped bar by default
+        b = bar(electric_fields, data, 'grouped');  % grouped bar by default
 
-        % Set colors (optional)
+        % Set colors
         b(1).FaceColor = [0 0.5 1];   % blue
         b(2).FaceColor = [1 0.4 0];   % orange
 
         % Label settings
-        set(gca, 'XTickLabel', groups, 'XTick', 1:length(groups), 'XTickLabelRotation', 45);
+        set(gca, 'XTickLabel', electric_fields, 'XTickLabel', groups, 'XTickLabelRotation', 45);
         ylabel('Displacement speed (\mum/min)');
         ylim([0 3]);
 
@@ -189,27 +194,32 @@ if(~live)
 
         % Example data
         data_sim = directedness(:, 1);  % Make sure dispAvg is a column vector
-        data_exp = [0.05; 0.4; 0.5; 0.6; 0.8; 0.9];
+        %data_exp = [0.05; 0.4; 0.5; 0.6; 0.8; 0.9];
+        %electric_fields = [0,30, 50, 75, 100, 200];
 
         % Combine into matrix (columns = datasets, rows = groups)
-        data = [data_sim, data_exp];  % [6x2] matrix
-
+        %data = [data_sim, data_exp];  % [6x2] matrix
+        data = data_sim;
         % Create grouped bar chart
         figure;
-        b = bar(data);  % grouped bar by default
-
+        %b = bar(electric_fields, data, 'grouped');  % grouped bar by default
+        b = bar(data);
         % Set colors (optional)
         b(1).FaceColor = [0 0.5 1];   % blue
-        b(2).FaceColor = [1 0.4 0];   % orange
+        %b(2).FaceColor = [1 0.4 0];   % orange
 
         % Label settings
-        set(gca, 'XTickLabel', groups, 'XTick', 1:length(groups), 'XTickLabelRotation', 45);
-        ylabel('Directedness');
-        ylim([-0.2 1.2]);
+        %set(gca, 'XTickLabel', electric_fields, 'XTickLabel', groups, 'XTickLabelRotation', 45);
+        set(gca, 'XTickLabel', groups, 'XTickLabelRotation', 45, 'FontSize', 18);
 
-        legend({'Simulation', 'Experiment'}, 'Location', 'northwest');
+        ylabel('Directionality', 'FontSize',18);
+        ylim([-1.2 .2]);
+
+        %legend({'Simulation', 'Experiment'}, 'Location', 'northwest');
+        %title('Simulation');
         box on;
-        set(gca,'fontsize',14);
+        set(gca,'fontsize',18);
+        exportgraphics(gcf, 'Directedness.pdf', 'ContentType', 'vector', 'Resolution',1000);
     end
 
     if(displacement3by2)

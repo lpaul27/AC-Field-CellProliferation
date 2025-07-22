@@ -24,7 +24,7 @@ nufric = [1, 1.15, 1.43, 0.93, 0.81,0.46];
 
 directedness = zeros(length(fields),1);
 dispAvg = zeros(length(fields),1);
-cell_posData = struct('posx', cell(1, length(fields)), 'posy', cell(1, length(fields)));
+cell_posData = struct();
 
 for z = 1:6
     displacement_run = zeros(runs, 1);
@@ -69,7 +69,7 @@ for z = 1:6
         % Discrete Parameters
         Field = 1;                              % Signals to time varying fields that field is on if 1
         rand_division = 0;                      % Enables field-directed mitosis
-        Discrete = 0;                           % Enables Discrete field change
+        Discrete = 1;                           % Enables Discrete field change
 
         ExMax = fields(z) / 3750;               % x field max
         EyMax = 0;                             % y field max
@@ -105,7 +105,7 @@ for z = 1:6
         B = ones(NumCells, 1);                  % Blue scale for plotting
 
         live = 0;                               % Enables Live Visualization
-        dim1directionality = 1;                 % enables 1D Directionality plot
+        dim1directionality = 0;                 % enables 1D Directionality plot
         dim2directionality = 0;                 % Enables 2D Directionality plot
         dim1displacement = 0;                   % Enables 1D Displacement plot
         displacement = 0;                       % Enables 2D Displacement plot
@@ -262,17 +262,62 @@ for z = 1:6
         x_raw = (x_time - x_time(1,:));
         y_raw = (y_time - y_time(1,:));
         dispruntheta = mean(cos(atan2(y_raw(runTime,:) , x_raw(runTime, :))));
+
+        switch z
+            case 1
+                cell_posData(p).posxr1 = x_time - x_time(1,:);
+                cell_posData(p).posyr1 = y_time - y_time(1,:);
+                cell_posData(p).theta1 = theta_time;
+            case 2
+                cell_posData(p).posxr2 = x_time - x_time(1,:);
+                cell_posData(p).posyr2 = y_time - y_time(1,:);
+                cell_posData(p).theta2 = theta_time;
+            case 3
+                cell_posData(p).posxr3 = x_time - x_time(1,:);
+                cell_posData(p).posyr3 = y_time - y_time(1,:);
+                cell_posData(p).theta3 = theta_time;
+            case 4
+                cell_posData(p).posxr4 = x_time - x_time(1,:);
+                cell_posData(p).posyr4 = y_time - y_time(1,:);
+                cell_posData(p).theta4 = theta_time;
+            case 5
+                cell_posData(p).posxr5 = x_time - x_time(1,:);
+                cell_posData(p).posyr5 = y_time - y_time(1,:);
+                cell_posData(p).theta5 = theta_time;
+            case 6
+                cell_posData(p).posxr6 = x_time - x_time(1,:);
+                cell_posData(p).posyr6 = y_time - y_time(1,:);
+                cell_posData(p).theta6 = theta_time;
+        end
+
     end
-    cell_posData(z).posx = x_time;
-    cell_posData(z).posy = y_time;
+
+
+
+%     cell_posData(z).posx = x_time;
+%     cell_posData(z).posy = y_time;
 
     dispAvg(z,1) = mean(displacement_run);
     directedness(z,1) = (dispruntheta);
 end
-for i = 1:6
-    cell_posData(i).posx = cell_posData(i).posx - cell_posData(i).posx(1,:);
-    cell_posData(i).posy = cell_posData(i).posy - cell_posData(i).posy(1,:);
-end
+posxrun_str = ["posxr1", "posxr2", "posxr3", "posxr4", "posxr5", "posxr6"];
+posyrun_str = ["posyr1", "posyr2", "posyr3", "posyr4", "posyr5", "posyr6"];
+thetarun_str = ["theta1", "theta2", "theta3", "theta4", "theta5", "theta6"];
+
+ for i = 1:length(fields)
+    for j = 1:runs
+        cell_posData(i).posxmean = mean(cell_posData(j).(posxrun_str(i)),2);
+        cell_posData(i).posxSD = std(cell_posData(j).(posxrun_str(i)),0,2);
+
+        cell_posData(i).posymean = mean(cell_posData(j).(posyrun_str(i)),2);
+        cell_posData(i).posySD = std(cell_posData(j).(posyrun_str(i)),0,2);
+
+        tmp = cos(cell_posData(j).(thetarun_str(i)));
+        cell_posData(i).directionality_mean = mean(tmp,2);
+        cell_posData(i).directionalitySD = std(tmp,0,2);
+        
+    end
+ end
 Visualize(x_time,y_time, theta_time, time_control, dispAvg, directedness, fields, cell_posData);
 % end timer of full sequence
 toc(tStart);
