@@ -25,7 +25,7 @@ function [] = Visualize(x_time,y_time, theta_time, time_control, dispAvg, direct
 global NumCells runTime displacement live dim2directionality polarhist dim1directionality dim1displacement...         %#ok<GVMIS>
     disphist directednessplot ExMax displacement3by2 runs %#ok<GVMIS>
 
-fieldboundslx = [-150, -200, -200, -200, -250, -250, -350];
+fieldboundslx = [-150, -200, -200, -250, -250, -350];
 fieldboundshx = [150, 100, 100, 50, 50, 50];
 fieldboundshy = [150, 150, 150,  100, 100, 100];
 fieldboundsly = [-150, -150, -150, -100, -100, -100];
@@ -83,7 +83,7 @@ if(~live)
             hold on
         end
         hold on
-        plot(time_control, directionalityMean4)
+        plot(time_control, directionalityMean4, 'Linewidth', 2, 'Color', [0 0 0])
         xlabel('Time (steps)', 'FontSize', 18);  ylabel('Directionality (\Phi_{x})', 'FontSize', 18);
         xline((runTime / 2),'-.', 'TURN', 'LineWidth',2, 'FontSize', 14);
         ylim([-1.2,1.2]); xlim([0, runTime]);
@@ -102,6 +102,7 @@ if(~live)
         set(gca, 'FontSize', 18);
         %print(gcf,'myplot.pdf','-dpdf', '-r500');
         %print(gcf,'-dpdf', '-loose', 'opengl', '-r500',[pwd\'myplot']);
+        exportgraphics(gcf, 'direcRise.pdf', 'ContentType', 'vector', 'Resolution',1000);    
     end
     %% 2D Directionality Graph
     % Visualization of allignent to a direction
@@ -226,25 +227,25 @@ if(~live)
         %b = bar(electric_fields, data, 'grouped');  % grouped bar by default
         b = bar(data);
         hold on
-        er = errorbar((1:length(groups)),data, err);
+        er = errorbar((1:length(groups)),data, err, 'o');
         er.Color = [0 0 0];
 
         % Set colors (optional)
-        b(1).FaceColor = [0 0.5 1];   % blue
+        b(1).FaceColor = [0.5 0.5 0.5];   % blue
         %b(2).FaceColor = [1 0.4 0];   % orange
 
         % Label settings
         %set(gca, 'XTickLabel', electric_fields, 'XTickLabel', groups, 'XTickLabelRotation', 45);
         set(gca, 'XTickLabel', groups, 'XTickLabelRotation', 45, 'FontSize', 18);
 
-        ylabel('Directionality', 'FontSize',18);
-        ylim([-1.2 .2]);
+        ylabel('Directionality (x)', 'FontSize',18);
+        ylim([-1.2 0]);
 
         %legend({'Simulation', 'Experiment'}, 'Location', 'northwest');
         %title('Simulation');
         box on;
         set(gca,'fontsize',18);
-        exportgraphics(gcf, 'Directedness.pdf', 'ContentType', 'vector', 'Resolution',1000);
+        exportgraphics(gcf, 'Directionality.pdf', 'ContentType', 'vector', 'Resolution',1000);
     end
 
     if(displacement3by2)
@@ -262,11 +263,15 @@ if(~live)
             yline(0, '-');
             xlabel('x-position (\mum)')
             ylabel('y-position (\mum)')
-            print1 = sprintf('EF Strength \n %.0f mV/mm', (fields(i)));
-            title(print1);
+            %print1 = sprintf('EF Strength \n %.0f mV/mm', (fields(i)));
+            %title(print1);
             xlim([fieldboundslx(i), fieldboundshx(i)]);
             ylim([fieldboundsly(i), fieldboundshy(i)]);
+            set(gca,'fontsize',14);
+            set(gcf, 'Color', 'white')
         end
+        
+        exportgraphics(gcf, 'sixPlots.pdf', 'ContentType', 'vector', 'Resolution',1000);    
     end
 end % end live conditional
 end % end function

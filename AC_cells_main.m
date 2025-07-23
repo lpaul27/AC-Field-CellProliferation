@@ -13,7 +13,7 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise displacement3by2                                                                                                %#ok<GVMIS>
 
 tStart = tic;
-runs = 3;
+runs = 5;
 fields = [0, 30, 50, 75,  100, 200];
 noises = [0.26, 0.24, 0.2, 0.28, 0.32, 0.56];
 forceScale = [1,1.11,1.4,0.85,0.77,0.45];
@@ -69,7 +69,7 @@ for z = 1:6
         % Discrete Parameters
         Field = 1;                              % Signals to time varying fields that field is on if 1
         rand_division = 0;                      % Enables field-directed mitosis
-        Discrete = 0;                           % Enables Discrete field change
+        Discrete = 1;                           % Enables Discrete field change
 
         ExMax = fields(z) / 3750;               % x field max
         EyMax = 0;                             % y field max
@@ -105,14 +105,14 @@ for z = 1:6
         B = ones(NumCells, 1);                  % Blue scale for plotting
 
         live = 0;                               % Enables Live Visualization
-        dim1directionality = 0;                 % enables 1D Directionality plot
+        dim1directionality = 1;                 % enables 1D Directionality plot
         dim2directionality = 0;                 % Enables 2D Directionality plot
         dim1displacement = 0;                   % Enables 1D Displacement plot
         displacement = 0;                       % Enables 2D Displacement plot
         polarhist = 0;                          % Enables polar histogram plot
         disphist =0;                           % enables displacement histogram plot
         directednessplot = 0;                   % enables directedness histogram plot
-        displacement3by2 = 1;                   % enables displacement of all fields in a 3x2
+        displacement3by2 = 0;                   % enables displacement of all fields in a 3x2
 
         %% Initialization of Variables
         % Preallocates values for optimal computation
@@ -321,7 +321,7 @@ Directrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6
 
         tmp = cell_posData(j).(Directrun_str(i));
         cell_posData(i).directionality_mean = mean(tmp(runTime,:),2);
-        cell_posData(i).directionalitySD = std(tmp(runTime,:),0,2);
+        cell_posData(i).directionalitySD = std(tmp(runTime,:),0,2) / sqrt(runs);
     end
  end
 Visualize(x_time,y_time, theta_time, time_control, dispAvg, directedness, fields, cell_posData);
