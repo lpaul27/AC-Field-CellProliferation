@@ -13,7 +13,7 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise displacement3by2                                                                                                %#ok<GVMIS>
 
 tStart = tic;
-runs = 1;
+runs = 3;
 fields = [0, 30, 50, 75,  100, 200];
 noises = [0.26, 0.24, 0.2, 0.28, 0.32, 0.56];
 forceScale = [1,1.11,1.4,0.85,0.77,0.45];
@@ -69,7 +69,7 @@ for z = 1:6
         % Discrete Parameters
         Field = 1;                              % Signals to time varying fields that field is on if 1
         rand_division = 0;                      % Enables field-directed mitosis
-        Discrete = 1;                           % Enables Discrete field change
+        Discrete = 0;                           % Enables Discrete field change
 
         ExMax = fields(z) / 3750;               % x field max
         EyMax = 0;                             % y field max
@@ -268,26 +268,33 @@ for z = 1:6
                 cell_posData(p).posxr1 = x_time - x_time(1,:);
                 cell_posData(p).posyr1 = y_time - y_time(1,:);
                 cell_posData(p).theta1 = theta_time;
+                cell_posData(p).direct1 = cos(theta_time);
             case 2
                 cell_posData(p).posxr2 = x_time - x_time(1,:);
                 cell_posData(p).posyr2 = y_time - y_time(1,:);
                 cell_posData(p).theta2 = theta_time;
+                cell_posData(p).direct2 = cos(theta_time);
+
             case 3
                 cell_posData(p).posxr3 = x_time - x_time(1,:);
                 cell_posData(p).posyr3 = y_time - y_time(1,:);
                 cell_posData(p).theta3 = theta_time;
+                cell_posData(p).direct3 = cos(theta_time);
             case 4
                 cell_posData(p).posxr4 = x_time - x_time(1,:);
                 cell_posData(p).posyr4 = y_time - y_time(1,:);
                 cell_posData(p).theta4 = theta_time;
+                cell_posData(p).direct4 = cos(theta_time);
             case 5
                 cell_posData(p).posxr5 = x_time - x_time(1,:);
                 cell_posData(p).posyr5 = y_time - y_time(1,:);
                 cell_posData(p).theta5 = theta_time;
+                cell_posData(p).direct5 = cos(theta_time);
             case 6
                 cell_posData(p).posxr6 = x_time - x_time(1,:);
                 cell_posData(p).posyr6 = y_time - y_time(1,:);
                 cell_posData(p).theta6 = theta_time;
+                cell_posData(p).direct6 = cos(theta_time);
         end
 
     end
@@ -302,7 +309,7 @@ for z = 1:6
 end
 posxrun_str = ["posxr1", "posxr2", "posxr3", "posxr4", "posxr5", "posxr6"];
 posyrun_str = ["posyr1", "posyr2", "posyr3", "posyr4", "posyr5", "posyr6"];
-thetarun_str = ["theta1", "theta2", "theta3", "theta4", "theta5", "theta6"];
+Directrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6"];
 
  for i = 1:length(fields)
     for j = 1:runs
@@ -312,10 +319,9 @@ thetarun_str = ["theta1", "theta2", "theta3", "theta4", "theta5", "theta6"];
         cell_posData(i).posymean = mean(cell_posData(j).(posyrun_str(i)),2);
         cell_posData(i).posySD = std(cell_posData(j).(posyrun_str(i)),0,2);
 
-        tmp = cos(cell_posData(j).(thetarun_str(i)));
-        cell_posData(i).directionality_mean = mean(tmp,2);
-        cell_posData(i).directionalitySD = std(tmp,0,2);
-        
+        tmp = cell_posData(j).(Directrun_str(i));
+        cell_posData(i).directionality_mean = mean(tmp(runTime,:),2);
+        cell_posData(i).directionalitySD = std(tmp(runTime,:),0,2);
     end
  end
 Visualize(x_time,y_time, theta_time, time_control, dispAvg, directedness, fields, cell_posData);

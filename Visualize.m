@@ -23,9 +23,9 @@ function [] = Visualize(x_time,y_time, theta_time, time_control, dispAvg, direct
 
 %% Begin Function
 global NumCells runTime displacement live dim2directionality polarhist dim1directionality dim1displacement...         %#ok<GVMIS>
-    disphist directednessplot ExMax displacement3by2 %#ok<GVMIS>
+    disphist directednessplot ExMax displacement3by2 runs %#ok<GVMIS>
 
-fieldboundslx = [-150, -200, -200, -200, -300, -300, -300];
+fieldboundslx = [-150, -200, -200, -200, -250, -250, -350];
 fieldboundshx = [150, 100, 100, 50, 50, 50];
 fieldboundshy = [150, 150, 150,  100, 100, 100];
 fieldboundsly = [-150, -150, -150, -100, -100, -100];
@@ -61,21 +61,34 @@ if(~live)
     %% 1D Directionality Graph
     % Visualization of allignment to 180 degree field change
     if(dim1directionality)
-        cosTheta = cos(theta_time);
-        sumCellAnglex = sum(cosTheta,2);
-        directionalityX = sumCellAnglex ./ NumCells;
-        confIntXrise = find(directionalityX >= (max(directionalityX) - 0.05));
-        confIntXfall = find(directionalityX <= (min(directionalityX(10:end)) + 0.05) & gradient(directionalityX) < 0);
-        XriseTime = confIntXrise(1,1);
-        XfallTime = confIntXfall(1,1);
+        cosTheta = zeros(runTime, runs);
+        sumCellAnglex = zeros(runTime, runs);
+        directionalityX = zeros(runTime, runs);
+
+        for i = 1:runs 
+            cosTheta(:,i) = mean((cell_posData(i).direct5),2);
+            sumCellAnglex(:,i) = sum((cosTheta(:,i)),2);
+            directionalityX(:,i) = sumCellAnglex(:,i);
+        end
+        directionalityMean4 = mean(cosTheta,2);
+
+%         confIntXrise = find(directionalityX >= (max(directionalityX) - 0.05));
+%         confIntXfall = find(directionalityX <= (min(directionalityX(10:end)) + 0.05) & gradient(directionalityX) < 0);
+%         XriseTime = confIntXrise(1,1);
+%         XfallTime = confIntXfall(1,1);
 
         figure
-        plot(time_control, directionalityX)
+        for i = 1:runs
+            scatter(time_control, cosTheta(:,i));
+            hold on
+        end
+        hold on
+        plot(time_control, directionalityMean4)
         xlabel('Time (steps)', 'FontSize', 18);  ylabel('Directionality (\Phi_{x})', 'FontSize', 18);
         xline((runTime / 2),'-.', 'TURN', 'LineWidth',2, 'FontSize', 14);
         ylim([-1.2,1.2]); xlim([0, runTime]);
-        print1 = sprintf('X Rise: %f', XriseTime);
-        print2 = sprintf('X Fall: %f', (XfallTime - (runTime / 2)));
+%         print1 = sprintf('X Rise: %f', XriseTime);
+%         print2 = sprintf('X Fall: %f', (XfallTime - (runTime / 2)));
         %xline(XriseTime, ':', print1, 'Color', 'b', 'LineWidth',1);
         %xline(XfallTime, ':', print2, 'Color', 'b', 'LineWidth',1);
         yline(0);
@@ -88,7 +101,7 @@ if(~live)
         set(gcf,'Color','white');
         set(gca, 'FontSize', 18);
         %print(gcf,'myplot.pdf','-dpdf', '-r500');
-        print(gcf,'-dpdf', '-loose', 'opengl', '-r500',[pwd\'myplot']);
+        %print(gcf,'-dpdf', '-loose', 'opengl', '-r500',[pwd\'myplot']);
     end
     %% 2D Directionality Graph
     % Visualization of allignent to a direction
@@ -191,19 +204,31 @@ if(~live)
     end
     if(directednessplot)
         groups = {'No EF', '30mV/mm', '50mV/mm', '75mV/mm', '100mV/mm', '200mV/mm'};
-
+        data_tmp = zeros(runTime,1);
+        err_tmp = zeros(runTime,1);
         % Example data
-        data_sim = directedness(:, 1);  % Make sure dispAvg is a column vector
+        for i = 1:length(groups)
+            
+            data_tmp(:, i) = cell_posData(i).directionality_mean;  % Make sure dispAvg is a column vector
+            err_tmp(:,i) = cell_posData(i).directionalitySD;
+            data_sim = data_tmp(runTime,:)';
+            err = err_tmp(runTime,:)';
+        end
         %data_exp = [0.05; 0.4; 0.5; 0.6; 0.8; 0.9];
         %electric_fields = [0,30, 50, 75, 100, 200];
 
         % Combine into matrix (columns = datasets, rows = groups)
         %data = [data_sim, data_exp];  % [6x2] matrix
         data = data_sim;
+
         % Create grouped bar chart
         figure;
         %b = bar(electric_fields, data, 'grouped');  % grouped bar by default
         b = bar(data);
+        hold on
+        er = errorbar((1:length(groups)),data, err);
+        er.Color = [0 0 0];
+
         % Set colors (optional)
         b(1).FaceColor = [0 0.5 1];   % blue
         %b(2).FaceColor = [1 0.4 0];   % orange
@@ -226,11 +251,12 @@ if(~live)
         tiledlayout(2,3);
 
         %plotting
+        posxrun_str = ["posxr1", "posxr2", "posxr3", "posxr4", "posxr5", "posxr6"];
+        posyrun_str = ["posyr1", "posyr2", "posyr3", "posyr4", "posyr5", "posyr6"];
 
-        % tile 1:
         for i=1:6
             nexttile
-            plot(cell_posData(i).posx, cell_posData(i).posy)
+            plot(cell_posData(1).(posxrun_str(i)), cell_posData(1).(posyrun_str(i)))
             hold on;
             xline(0, '-');
             yline(0, '-');
