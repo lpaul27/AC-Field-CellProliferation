@@ -23,12 +23,12 @@ function [] = Visualize(x_time,y_time, theta_time, time_control, dispAvg, direct
 
 %% Begin Function
 global NumCells runTime displacement live dim2directionality polarhist dim1directionality dim1displacement...         %#ok<GVMIS>
-    disphist directednessplot ExMax displacement3by2 runs %#ok<GVMIS>
+    disphist directednessplot ExMax displacement3by2 runs densityplotDIR densityplotDISP %#ok<GVMIS>
 
-fieldboundslx = [-150, -200, -200, -250, -250, -350];
+fieldboundslx = [-150, -200, -200, -250, -250, -250];
 fieldboundshx = [150, 100, 100, 50, 50, 50];
-fieldboundshy = [150, 150, 150,  100, 100, 100];
-fieldboundsly = [-150, -150, -150, -100, -100, -100];
+fieldboundshy = [150, 150, 150,  150, 150, 150];
+fieldboundsly = [-150, -150, -150, -150, -150, -150];
 % runs nothing if live simulation is on
 
 if(~live)
@@ -60,6 +60,9 @@ if(~live)
 
     %% 1D Directionality Graph
     % Visualization of allignment to 180 degree field change
+
+    quantitative_data = 1;
+
     if(dim1directionality)
         cosTheta = zeros(runTime, runs);
         sumCellAnglex = zeros(runTime, runs);
@@ -72,36 +75,41 @@ if(~live)
         end
         directionalityMean4 = mean(cosTheta,2);
 
-%         confIntXrise = find(directionalityX >= (max(directionalityX) - 0.05));
-%         confIntXfall = find(directionalityX <= (min(directionalityX(10:end)) + 0.05) & gradient(directionalityX) < 0);
-%         XriseTime = confIntXrise(1,1);
-%         XfallTime = confIntXfall(1,1);
-
+        if(quantitative_data)
+            confIntXrise = find(directionalityX >= (max(directionalityX) - 0.05));
+            confIntXfall = find(directionalityX <= (min(directionalityX(10:end)) + 0.05) & gradient(directionalityX) < 0);
+            XriseTime = confIntXrise(1,1);
+            XfallTime = confIntXfall(1,1);
+        end
         figure
         for i = 1:runs
-            scatter(time_control, cosTheta(:,i));
+            scatter(2*time_control, cosTheta(:,i));
             hold on
         end
         hold on
-        plot(time_control, directionalityMean4, 'Linewidth', 2, 'Color', [0 0 0])
-        xlabel('Time (steps)', 'FontSize', 18);  ylabel('Directionality (\Phi_{x})', 'FontSize', 18);
-        xline((runTime / 2),'-.', 'TURN', 'LineWidth',2, 'FontSize', 14);
-        ylim([-1.2,1.2]); xlim([0, runTime]);
-%         print1 = sprintf('X Rise: %f', XriseTime);
-%         print2 = sprintf('X Fall: %f', (XfallTime - (runTime / 2)));
-        %xline(XriseTime, ':', print1, 'Color', 'b', 'LineWidth',1);
-        %xline(XfallTime, ':', print2, 'Color', 'b', 'LineWidth',1);
+        plot((time_control * 2), directionalityMean4, 'Linewidth', 2, 'Color', [0 0 0])
+        xlabel('Time (minutes)', 'FontSize', 18);  ylabel('Directionality (\Phi_{x})', 'FontSize', 18);
+        %xticks = 2*(1:runTime)';
+        xticks([0 60 120 180 240])
+        xticklabels([0 60 120 180 240]);
+        xline((runTime / 2) * 2,'-.', 'FLIP', 'LineWidth',2, 'FontSize', 14);
+        ylim([-1.0,1.0]); xlim([0, runTime * 2]);
+        
+        if(quantitative_data)
+            print1 = sprintf('X Rise: %f', XriseTime);
+            print2 = sprintf('X Fall: %f', (XfallTime - (runTime / 2)));
+            xline(XriseTime, ':', print1, 'Color', 'b', 'LineWidth',1);
+            xline(XfallTime, ':', print2, 'Color', 'b', 'LineWidth',1);
+        end
+
         yline(0);
         yline(1, '--');
         yline(-1, '--');
         txt1 = {'FIELD RIGHT'}; txt2 = {'FIELD LEFT'};
-        text((runTime /9), 1.1, txt1, 'FontSize',14);
-        text((5*runTime /8), 1.1, txt2, 'FontSize',14);
-        %set(gca, 'FontSize', 18, 'Color',[1, 1, 1])
+        text((runTime*2 /9), 1.1, txt1, 'FontSize',14);
+        text((5*runTime /4), 1.1, txt2, 'FontSize',14);
         set(gcf,'Color','white');
         set(gca, 'FontSize', 18);
-        %print(gcf,'myplot.pdf','-dpdf', '-r500');
-        %print(gcf,'-dpdf', '-loose', 'opengl', '-r500',[pwd\'myplot']);
         exportgraphics(gcf, 'direcRise.pdf', 'ContentType', 'vector', 'Resolution',1000);    
     end
     %% 2D Directionality Graph
@@ -147,6 +155,9 @@ if(~live)
     % Visualization of directional distribution
 
     if(polarhist)
+
+        % NOT FINISHED!
+        % !!!!!!!!!!!!! %
 
         %calculations
         stat_raw = reshape(theta_time, 1, []);
@@ -204,7 +215,7 @@ if(~live)
         set(gca,'fontsize',14);
     end
     if(directednessplot)
-        groups = {'No EF', '30mV/mm', '50mV/mm', '75mV/mm', '100mV/mm', '200mV/mm'};
+        groups = {'No EF', '30 mV/mm', '50 mV/mm', '75 mV/mm', '100 mV/mm', '200 mV/mm'};
         data_tmp = zeros(runTime,1);
         err_tmp = zeros(runTime,1);
         % Example data
@@ -215,16 +226,18 @@ if(~live)
             data_sim = data_tmp(runTime,:)';
             err = err_tmp(runTime,:)';
         end
-        %data_exp = [0.05; 0.4; 0.5; 0.6; 0.8; 0.9];
-        %electric_fields = [0,30, 50, 75, 100, 200];
-
+        if(quantitative_data)
+            data_exp = [0.05; 0.4; 0.5; 0.6; 0.8; 0.9];
+            electric_fields = [0,30, 50, 75, 100, 200];
+        end
         % Combine into matrix (columns = datasets, rows = groups)
-        %data = [data_sim, data_exp];  % [6x2] matrix
-        data = data_sim;
-
+        if(quantitative_data)
+            data = [data_sim, data_exp];  % [6x2] matrix
+        else
+            data = data_sim;
+        end
         % Create grouped bar chart
         figure;
-        %b = bar(electric_fields, data, 'grouped');  % grouped bar by default
         b = bar(data);
         hold on
         er = errorbar((1:length(groups)),data, err, 'o');
@@ -232,19 +245,23 @@ if(~live)
 
         % Set colors (optional)
         b(1).FaceColor = [0.5 0.5 0.5];   % blue
-        %b(2).FaceColor = [1 0.4 0];   % orange
+
+        if(quantitative_data)
+            b(2).FaceColor = [1 0.4 0];   % orange
+        end
 
         % Label settings
         %set(gca, 'XTickLabel', electric_fields, 'XTickLabel', groups, 'XTickLabelRotation', 45);
-        set(gca, 'XTickLabel', groups, 'XTickLabelRotation', 45, 'FontSize', 18);
+        set(gca, 'XTickLabel', groups, 'XTickLabelRotation', 45, 'FontSize', 18, 'FontWeight', 'bold');
 
-        ylabel('Directionality (x)', 'FontSize',18);
-        ylim([-1.2 0]);
+        ylabel('Directionality \Phi_x', 'FontSize',18);
+        yticks([-1.0, -0.8, -0.6,-0.4, -0.2, 0])
+        ylim([-1.0 0]);
 
         %legend({'Simulation', 'Experiment'}, 'Location', 'northwest');
-        %title('Simulation');
         box on;
         set(gca,'fontsize',18);
+        set(gcf, 'Color', 'white')
         exportgraphics(gcf, 'Directionality.pdf', 'ContentType', 'vector', 'Resolution',1000);
     end
 
@@ -265,13 +282,71 @@ if(~live)
             ylabel('y-position (\mum)')
             %print1 = sprintf('EF Strength \n %.0f mV/mm', (fields(i)));
             %title(print1);
-            xlim([fieldboundslx(i), fieldboundshx(i)]);
-            ylim([fieldboundsly(i), fieldboundshy(i)]);
+            xlim([-250, 150]);
+            ylim([-150, 150]);
             set(gca,'fontsize',14);
             set(gcf, 'Color', 'white')
         end
         
         exportgraphics(gcf, 'sixPlots.pdf', 'ContentType', 'vector', 'Resolution',1000);    
     end
+    
+    num_density = 2;
+
+    if(densityplotDIR)
+        % compares directionality of different densities
+        groups = {'15 mV/mm', '30 mV/mm', '50 mV/mm', '75 mV/mm', '100 mV/mm', '200 mV/mm'};
+        
+        % Create grouped bar chart
+        figure;
+        
+        b = bar(data);
+        hold on
+
+        % Set colors (optional)
+        b(1).FaceColor = [0.5 0.5 0.5];     % blue
+        b(2).FaceColor = [1 0.4 0];         % orange
+
+        % Label settings
+        set(gca, 'XTickLabel', groups, 'XTickLabelRotation', 45, 'FontSize', 18, 'FontWeight', 'bold');
+
+        ylabel('Directionality \Phi_x', 'FontSize',18);
+        yticks([-1.0, -0.8, -0.6,-0.4, -0.2, 0])
+        ylim([-1.0 0]);
+
+        legend({'Low Density', 'Higfh Density'}, 'Location', 'northwest');
+        box on;
+        set(gca,'fontsize',18);
+        set(gcf, 'Color', 'white')
+
+    end
+
+    if(densityplotDISP)
+        % compares displacement of different densities
+        groups = {'15 mV/mm', '30 mV/mm', '50 mV/mm', '75 mV/mm', '100 mV/mm', '200 mV/mm'};
+        
+        % Create grouped bar chart
+        figure;
+        
+        b = bar(data);
+        hold on
+
+        % Set colors (optional)
+        b(1).FaceColor = [0.5 0.5 0.5];     % blue
+        b(2).FaceColor = [1 0.4 0];         % orange
+
+        % Label settings
+        set(gca, 'XTickLabel', groups, 'XTickLabelRotation', 45, 'FontSize', 18, 'FontWeight', 'bold');
+
+        ylabel('Directionality \Phi_x', 'FontSize',18);
+        yticks([-1.0, -0.8, -0.6,-0.4, -0.2, 0])
+        ylim([-1.0 0]);
+
+        legend({'Low Density', 'Higfh Density'}, 'Location', 'northwest');
+        box on;
+        set(gca,'fontsize',18);
+        set(gcf, 'Color', 'white')
+    end
+
 end % end live conditional
 end % end function

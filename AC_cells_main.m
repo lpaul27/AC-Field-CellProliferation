@@ -10,7 +10,8 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     critRad Ccyclet critical_pressure daughter_noise Cell_std death_rate ...
     death_pressure chill dim2directionality displacement live polarhist dim1directionality...
     Discrete Sine dim1displacement rand_division speed_decay dim1noise dim2noise etaX etaY ...                                                                                        %#ok<GVMIS>
-    disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise displacement3by2                                                                                                %#ok<GVMIS>
+    disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise displacement3by2 ...                                                                                               %#ok<GVMIS>
+    densityplotDIR densityplotDISP
 
 tStart = tic;
 runs = 5;
@@ -38,7 +39,7 @@ for z = 1:6
         dt = 5;                                  % time step
         NumCells = 35;                           % number of cells in simulation
         vels_med = 0.083;                         % initial velocity param center point
-        lbox = 1550;                             % size of the box particles are confined to
+        lbox = 2050;                             % size of the box particles are confined to
         R_boundary = lbox/6;                     % Sample domain size for cells to begin
         chill = 15;                              % chill time to suppress cell death
 
@@ -72,11 +73,9 @@ for z = 1:6
         Discrete = 1;                           % Enables Discrete field change
 
         ExMax = fields(z) / 3750;               % x field max
-        EyMax = 0;                             % y field max
-        absE = sqrt(EyMax^2 + ExMax^2);                     % magnitude of field
-        %mult = 0.03 / ((0.008 / absE) + 1);
-        %mult = 0.04*(1-exp(-absE/0.1));
-        %ExMax=mult;
+        EyMax = 0;                              % y field max
+        absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
+       
 
         % Sinusoidal parameters
         % f(t) = A sin(wt + o)                  % form
@@ -105,7 +104,7 @@ for z = 1:6
         B = ones(NumCells, 1);                  % Blue scale for plotting
 
         live = 0;                               % Enables Live Visualization
-        dim1directionality = 1;                 % enables 1D Directionality plot
+        dim1directionality = 0;                 % enables 1D Directionality plot
         dim2directionality = 0;                 % Enables 2D Directionality plot
         dim1displacement = 0;                   % Enables 1D Displacement plot
         displacement = 0;                       % Enables 2D Displacement plot
@@ -113,6 +112,8 @@ for z = 1:6
         disphist =0;                           % enables displacement histogram plot
         directednessplot = 0;                   % enables directedness histogram plot
         displacement3by2 = 0;                   % enables displacement of all fields in a 3x2
+        densityplotDIR = 0;                     % enables density plot for directionality
+        densityplotDISP = 0;                    % enables density plot for displacement
 
         %% Initialization of Variables
         % Preallocates values for optimal computation
@@ -298,12 +299,6 @@ for z = 1:6
         end
 
     end
-
-
-
-%     cell_posData(z).posx = x_time;
-%     cell_posData(z).posy = y_time;
-
     dispAvg(z,1) = mean(displacement_run);
     directedness(z,1) = (dispruntheta);
 end
@@ -324,9 +319,9 @@ Directrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6
         cell_posData(i).directionalitySD = std(tmp(runTime,:),0,2) / sqrt(runs);
     end
  end
+ 
 Visualize(x_time,y_time, theta_time, time_control, dispAvg, directedness, fields, cell_posData);
+
 % end timer of full sequence
 toc(tStart);
-
-
 % end simulation
