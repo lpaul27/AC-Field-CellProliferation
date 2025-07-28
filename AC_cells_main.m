@@ -14,8 +14,9 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     densityplotDIR densityplotDISP
 
 tStart = tic;
-runs = 5;
+runs = 2;
 fields = [0, 30, 50, 75,  100, 200];
+densityfields = [15, 30, 50, 75, 100, 200];
 noises = [0.26, 0.24, 0.2, 0.28, 0.32, 0.56];
 forceScale = [1,1.11,1.4,0.85,0.77,0.45];
 noiseX = [0.28,0.28,0.23,0.33,0.37,0.61];
@@ -26,6 +27,7 @@ nufric = [1, 1.15, 1.43, 0.93, 0.81,0.46];
 directedness = zeros(length(fields),1);
 dispAvg = zeros(length(fields),1);
 cell_posData = struct();
+cell_densitydata = struct();
 
 for z = 1:6
     displacement_run = zeros(runs, 1);
@@ -37,7 +39,12 @@ for z = 1:6
         %% Domain Parameters
         runTime = 120;                           % total runTime of simulation
         dt = 5;                                  % time step
-        NumCells = 35;                           % number of cells in simulation
+        if(p)
+            NumCells =35;                           % number of cells in simulation
+        end
+        if(p == 2)
+            NumCells = 210;
+        end
         vels_med = 0.083;                         % initial velocity param center point
         lbox = 2050;                             % size of the box particles are confined to
         R_boundary = lbox/6;                     % Sample domain size for cells to begin
@@ -70,9 +77,9 @@ for z = 1:6
         % Discrete Parameters
         Field = 1;                              % Signals to time varying fields that field is on if 1
         rand_division = 0;                      % Enables field-directed mitosis
-        Discrete = 1;                           % Enables Discrete field change
+        Discrete = 0;                           % Enables Discrete field change
 
-        ExMax = fields(z) / 3750;               % x field max
+        ExMax = densityfields(z) / 3750;               % x field max
         EyMax = 0;                              % y field max
         absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
        
@@ -112,7 +119,7 @@ for z = 1:6
         disphist =0;                           % enables displacement histogram plot
         directednessplot = 0;                   % enables directedness histogram plot
         displacement3by2 = 0;                   % enables displacement of all fields in a 3x2
-        densityplotDIR = 0;                     % enables density plot for directionality
+        densityplotDIR = 1;                     % enables density plot for directionality
         densityplotDISP = 0;                    % enables density plot for displacement
 
         %% Initialization of Variables
@@ -263,7 +270,7 @@ for z = 1:6
         x_raw = (x_time - x_time(1,:));
         y_raw = (y_time - y_time(1,:));
         dispruntheta = mean(cos(atan2(y_raw(runTime,:) , x_raw(runTime, :))));
-
+        
         switch z
             case 1
                 cell_posData(p).posxr1 = x_time - x_time(1,:);
@@ -297,6 +304,7 @@ for z = 1:6
                 cell_posData(p).theta6 = theta_time;
                 cell_posData(p).direct6 = cos(theta_time);
         end
+        
 
     end
     dispAvg(z,1) = mean(displacement_run);

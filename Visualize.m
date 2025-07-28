@@ -291,16 +291,41 @@ if(~live)
         exportgraphics(gcf, 'sixPlots.pdf', 'ContentType', 'vector', 'Resolution',1000);    
     end
     
-    num_density = 2;
 
     if(densityplotDIR)
         % compares directionality of different densities
         groups = {'15 mV/mm', '30 mV/mm', '50 mV/mm', '75 mV/mm', '100 mV/mm', '200 mV/mm'};
-        
+        posxrun_str = ["posxr1", "posxr2", "posxr3", "posxr4", "posxr5", "posxr6"];
+        posyrun_str = ["posyr1", "posyr2", "posyr3", "posyr4", "posyr5", "posyr6"];
+        dircrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6"];
         % Create grouped bar chart
         figure;
         
+        data = zeros(6,2);
+        err = zeros(6,2);
+
+        for i = 1:6
+            for j = 1:2
+                tmp = mean(cell_posData(j).(dircrun_str(i)),2);
+                tmp_err = std(cell_posData(j).(dircrun_str(i)),0,2);
+                data(i,j) = tmp(runTime);
+                err(i,j) = tmp_err(runTime);
+            end
+        end
+
         b = bar(data);
+        hold on
+        for i = 1:2
+            xBar(:, i) = b(i).XEndPoints;    
+        end
+
+        for i =1:6
+            for j = 1:2
+                er = errorbar(xBar(i,j),data(i,j), err(i,j), 'o');
+                er.Color = [0 0 0];
+                hold on
+            end
+        end
         hold on
 
         % Set colors (optional)
@@ -314,7 +339,7 @@ if(~live)
         yticks([-1.0, -0.8, -0.6,-0.4, -0.2, 0])
         ylim([-1.0 0]);
 
-        legend({'Low Density', 'Higfh Density'}, 'Location', 'northwest');
+        legend({'Low Density', 'High Density'}, 'Location', 'southwest');
         box on;
         set(gca,'fontsize',18);
         set(gcf, 'Color', 'white')
@@ -342,11 +367,10 @@ if(~live)
         yticks([-1.0, -0.8, -0.6,-0.4, -0.2, 0])
         ylim([-1.0 0]);
 
-        legend({'Low Density', 'Higfh Density'}, 'Location', 'northwest');
+        legend({'Low Density', 'High Density'}, 'Location', 'northwest');
         box on;
         set(gca,'fontsize',18);
         set(gcf, 'Color', 'white')
     end
-
 end % end live conditional
 end % end function
