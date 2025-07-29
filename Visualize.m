@@ -23,7 +23,7 @@ function [] = Visualize(x_time,y_time, theta_time, time_control, dispAvg, direct
 
 %% Begin Function
 global NumCells runTime displacement live dim2directionality polarhist dim1directionality dim1displacement...         %#ok<GVMIS>
-    disphist directednessplot ExMax displacement3by2 runs densityplotDIR densityplotDISP %#ok<GVMIS>
+    disphist directednessplot ExMax displacement3by2 runs densityplotDIR densityplotDISP densityDirTime%#ok<GVMIS>
 
 fieldboundslx = [-150, -200, -200, -250, -250, -250];
 fieldboundshx = [150, 100, 100, 50, 50, 50];
@@ -68,7 +68,7 @@ if(~live)
         sumCellAnglex = zeros(runTime, runs);
         directionalityX = zeros(runTime, runs);
 
-        for i = 1:runs 
+        for i = 1:runs
             cosTheta(:,i) = mean((cell_posData(i).direct5),2);
             sumCellAnglex(:,i) = sum((cosTheta(:,i)),2);
             directionalityX(:,i) = sumCellAnglex(:,i);
@@ -94,7 +94,7 @@ if(~live)
         xticklabels([0 60 120 180 240]);
         xline((runTime / 2) * 2,'-.', 'FLIP', 'LineWidth',2, 'FontSize', 14);
         ylim([-1.0,1.0]); xlim([0, runTime * 2]);
-        
+
         if(quantitative_data)
             print1 = sprintf('X Rise: %f', XriseTime);
             print2 = sprintf('X Fall: %f', (XfallTime - (runTime / 2)));
@@ -110,7 +110,7 @@ if(~live)
         text((5*runTime /4), 1.1, txt2, 'FontSize',14);
         set(gcf,'Color','white');
         set(gca, 'FontSize', 18);
-        exportgraphics(gcf, 'direcRise.pdf', 'ContentType', 'vector', 'Resolution',1000);    
+        exportgraphics(gcf, 'direcRise.pdf', 'ContentType', 'vector', 'Resolution',1000);
     end
     %% 2D Directionality Graph
     % Visualization of allignent to a direction
@@ -214,18 +214,22 @@ if(~live)
         box on;
         set(gca,'fontsize',14);
     end
+
     if(directednessplot)
         groups = {'No EF', '30 mV/mm', '50 mV/mm', '75 mV/mm', '100 mV/mm', '200 mV/mm'};
         data_tmp = zeros(runTime,1);
         err_tmp = zeros(runTime,1);
         % Example data
+
         for i = 1:length(groups)
-            
+
             data_tmp(:, i) = cell_posData(i).directionality_mean;  % Make sure dispAvg is a column vector
             err_tmp(:,i) = cell_posData(i).directionalitySD;
             data_sim = data_tmp(runTime,:)';
             err = err_tmp(runTime,:)';
+
         end
+
         if(quantitative_data)
             data_exp = [0.05; 0.4; 0.5; 0.6; 0.8; 0.9];
             electric_fields = [0,30, 50, 75, 100, 200];
@@ -287,39 +291,54 @@ if(~live)
             set(gca,'fontsize',14);
             set(gcf, 'Color', 'white')
         end
-        
-        exportgraphics(gcf, 'sixPlots.pdf', 'ContentType', 'vector', 'Resolution',1000);    
+
+        exportgraphics(gcf, 'sixPlots.pdf', 'ContentType', 'vector', 'Resolution',1000);
     end
-    
+
 
     if(densityplotDIR)
         % compares directionality of different densities
         groups = {'15 mV/mm', '30 mV/mm', '50 mV/mm', '75 mV/mm', '100 mV/mm', '200 mV/mm'};
-        posxrun_str = ["posxr1", "posxr2", "posxr3", "posxr4", "posxr5", "posxr6"];
-        posyrun_str = ["posyr1", "posyr2", "posyr3", "posyr4", "posyr5", "posyr6"];
         dircrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6"];
         % Create grouped bar chart
-        figure;
-        
-        data = zeros(6,2);
-        err = zeros(6,2);
 
-        for i = 1:6
-            for j = 1:2
-                tmp = mean(cell_posData(j).(dircrun_str(i)),2);
-                tmp_err = std(cell_posData(j).(dircrun_str(i)),0,2);
-                data(i,j) = tmp(runTime);
-                err(i,j) = tmp_err(runTime);
+        tmp_high = zeros(runTime, runs/2);
+        tmp_low = zeros(runTime, runs/2);
+        std_low = zeros(runTime, runs/2);
+        std_high = zeros(runTime, runs/2);
+
+        for i = 1:length(groups)
+            for j = 1:runs
+                if(mod(j,2))
+                    tmp_high(:,i) = mean(cell_posData(j).(dircrun_str(i)),2);
+                    std_high(:,i) = std(cell_posData(j).(dircrun_str(i)),0,2) / sqrt(runs/2);
+                end
+                if(~mod(j,2))
+                    tmp_low(:, i) = mean(cell_posData(j).(dircrun_str(i)),2);  % Make sure dispAvg is a column vector
+                    std_low(:,i) = std(cell_posData(j).(dircrun_str(i)),0,2) / sqrt(runs/2);
+                end
             end
         end
 
+        high_density = mean(tmp_high);
+        low_density = mean(tmp_low);
+        HD_err = std(std_high);
+        LD_err = std(std_low);
+
+        data = [low_density', high_density'];
+        err = [LD_err', HD_err'];
+
+        figure;
+
         b = bar(data);
+        xBar = zeros(6,2);
+
         hold on
         for i = 1:2
-            xBar(:, i) = b(i).XEndPoints;    
+            xBar(:, i) = b(i).XEndPoints;
         end
 
-        for i =1:6
+        for i =1:length(groups)
             for j = 1:2
                 er = errorbar(xBar(i,j),data(i,j), err(i,j), 'o');
                 er.Color = [0 0 0];
@@ -348,12 +367,66 @@ if(~live)
 
     if(densityplotDISP)
         % compares displacement of different densities
+        % compares directionality of different densities
         groups = {'15 mV/mm', '30 mV/mm', '50 mV/mm', '75 mV/mm', '100 mV/mm', '200 mV/mm'};
-        
+        posxrun_str = ["posxr1", "posxr2", "posxr3", "posxr4", "posxr5", "posxr6"];
+        posyrun_str = ["posyr1", "posyr2", "posyr3", "posyr4", "posyr5", "posyr6"];
         % Create grouped bar chart
+
+        tmpY_high = zeros(runTime, 6);
+        tmpX_high = zeros(runTime, 6);
+        stdX_high = zeros(runTime, 6);
+        stdY_high = zeros(runTime,6);
+        tmpY_low = zeros(runTime, 6);
+        tmpX_low = zeros(runTime, 6);
+        stdX_low = zeros(runTime, 6);
+        stdY_low = zeros(runTime,6);
+
+        for i = 1:length(groups)
+            for j = 1:runs
+                if(mod(j,2))
+                    tmpY_high(:,i) = mean(cell_posData(j).(posxrun_str(i)),2);
+                    tmpX_high(:,i) = mean(cell_posData(j).(posyrun_str(i)),2);
+
+                    stdX_high(:,i) = std(cell_posData(j).(posxrun_str(i)),0,2) / sqrt(runs/2);
+                    stdY_high(:,i) = std(cell_posData(j).(posxrun_str(i)),0,2) / sqrt(runs/2);
+                end
+                if(~mod(j,2))
+                    tmpY_low(:,i) = mean(cell_posData(j).(posxrun_str(i)),2);
+                    tmpX_low(:,i) = mean(cell_posData(j).(posyrun_str(i)),2);
+
+                    stdX_low(:,i) = std(cell_posData(j).(posxrun_str(i)),0,2) / sqrt(runs/2);
+                    stdY_low(:,i) = std(cell_posData(j).(posxrun_str(i)),0,2) / sqrt(runs/2);
+                end
+            end
+        end
+
+        disp_low = sqrt((tmpX_low(runTime,:)).^2 + tmpY_low(runTime,:).^2) ./ runTime;
+        disp_high = sqrt(tmpX_high(runTime,:).^2 + tmpY_high(runTime,:).^2) ./ runTime;
+
+        low_err = sqrt((stdX_low(runTime,:)).^2 + stdY_low(runTime,:).^2) ./ runTime;
+        high_err = sqrt(stdX_high(runTime,:).^2 + stdY_high(runTime,:).^2) ./ runTime;
+
+        data = [disp_low', disp_high'];
+        err = [low_err', high_err'];
+
         figure;
-        
+
         b = bar(data);
+        xBar = zeros(6,2);
+
+        hold on
+        for i = 1:2
+            xBar(:, i) = b(i).XEndPoints;
+        end
+
+        for i =1:length(groups)
+            for j = 1:2
+                er = errorbar(xBar(i,j),data(i,j), err(i,j), 'o');
+                er.Color = [0 0 0];
+                hold on
+            end
+        end
         hold on
 
         % Set colors (optional)
@@ -363,14 +436,21 @@ if(~live)
         % Label settings
         set(gca, 'XTickLabel', groups, 'XTickLabelRotation', 45, 'FontSize', 18, 'FontWeight', 'bold');
 
-        ylabel('Directionality \Phi_x', 'FontSize',18);
-        yticks([-1.0, -0.8, -0.6,-0.4, -0.2, 0])
-        ylim([-1.0 0]);
+        ylabel('Displacement Speed (\mum/min)', 'FontSize',18);
+        yticks([0, 0.5, 1.0, 1.5, 2.0, 2.5])
+        ylim([0 2.5]);
 
         legend({'Low Density', 'High Density'}, 'Location', 'northwest');
         box on;
         set(gca,'fontsize',18);
         set(gcf, 'Color', 'white')
+
     end
-end % end live conditional
+
+    if(densityDirTime)
+        % choose 100 mV/mm case for analysis
+        
+
+
+    end % end live conditional
 end % end function

@@ -11,10 +11,10 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     death_pressure chill dim2directionality displacement live polarhist dim1directionality...
     Discrete Sine dim1displacement rand_division speed_decay dim1noise dim2noise etaX etaY ...                                                                                        %#ok<GVMIS>
     disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise displacement3by2 ...                                                                                               %#ok<GVMIS>
-    densityplotDIR densityplotDISP
+    densityplotDIR densityplotDISP densityDirTime
 
 tStart = tic;
-runs = 2;
+runs = 6;
 fields = [0, 30, 50, 75,  100, 200];
 densityfields = [15, 30, 50, 75, 100, 200];
 noises = [0.26, 0.24, 0.2, 0.28, 0.32, 0.56];
@@ -39,13 +39,13 @@ for z = 1:6
         %% Domain Parameters
         runTime = 120;                           % total runTime of simulation
         dt = 5;                                  % time step
-        if(p)
+        if(~mod(p,2))
             NumCells =35;                           % number of cells in simulation
         end
-        if(p == 2)
+        if(mod(p,2))
             NumCells = 210;
         end
-        vels_med = 0.083;                         % initial velocity param center point
+        vels_med = 0.083;                        % initial velocity param center point
         lbox = 2050;                             % size of the box particles are confined to
         R_boundary = lbox/6;                     % Sample domain size for cells to begin
         chill = 15;                              % chill time to suppress cell death
@@ -62,13 +62,10 @@ for z = 1:6
 
         %% Cell-cell parameters
         k = 0.01;                               % constant in force repulsion calculation (~elasticity)
-        noise = 0.28;
-        alpha = 10;                                  % noise strength in movement
-        emax = 1e-4;
         daughter_noise = 0.1;                   % noise strength in mitosis separation
         nu = nufric(1);                                 % friction factor
         mu = 1;                                 % electrical mobility
-        neighborWeight = 0.01;                  % group movement weighting
+        neighborWeight = 1;                  % group movement weighting
         c_rec = 0.9;                            % mean receptor concentration (normalized)
         c_lig = 0.9;                            % mean ligand concentration (normalized)
         adh = 0;                                % adhesive coefficient
@@ -94,7 +91,7 @@ for z = 1:6
         %% Simulation type parameters
         dim1noise = 1;                          % signals type of noise (1D)
         %eta = noise * (1+ alpha / (emax/absE + 1));
-        eta = 0.27;
+        eta = 0.28;
         dim2noise = 0;                          % signals type of noise (2D)
         etaX = eta / 2;         % X component of noise strength
         etaY = 3*eta;         % Y component of noise strength
@@ -118,9 +115,10 @@ for z = 1:6
         polarhist = 0;                          % Enables polar histogram plot
         disphist =0;                           % enables displacement histogram plot
         directednessplot = 0;                   % enables directedness histogram plot
-        displacement3by2 = 0;                   % enables displacement of all fields in a 3x2
+        displacement3by2 = 1;                   % enables displacement of all fields in a 3x2
         densityplotDIR = 1;                     % enables density plot for directionality
         densityplotDISP = 0;                    % enables density plot for displacement
+        densityDirTime = 1;                     % enables directionality over time plot for density
 
         %% Initialization of Variables
         % Preallocates values for optimal computation
