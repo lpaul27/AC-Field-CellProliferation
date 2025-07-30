@@ -14,7 +14,7 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     densityplotDIR densityplotDISP densityDirTime
 
 tStart = tic;
-runs = 5;
+runs = 20;
 fields = [0, 30, 50, 75,  100, 200];
 densityfields = [15, 30, 50, 75, 100, 200];
 noises = [0.26, 0.24, 0.2, 0.28, 0.32, 0.56];
@@ -40,7 +40,7 @@ for z = 1:6
         runTime = 120;                           % total runTime of simulation
         dt = 1;                                  % time step
         NumCells = 50;
-        if(1)
+        if(0)
             if(~mod(p,2))
                 NumCells =35;                           % number of cells in simulation
             end
@@ -79,7 +79,7 @@ for z = 1:6
         rand_division = 0;                      % Enables field-directed mitosis
         Discrete = 0;                           % Enables Discrete field change
 
-        ExMax = fields(z) / 3000; %150              % x field max
+        ExMax = densityfields(z) / 2000;               % x field max
         EyMax = 0;                              % y field max
         absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
 
@@ -116,9 +116,9 @@ for z = 1:6
         dim1displacement = 0;                   % Enables 1D Displacement plot
         displacement = 0;                       % Enables 2D Displacement plot
         polarhist = 0;                          % Enables polar histogram plot
-        disphist =0;                           % enables displacement histogram plot
-        directednessplot = 1;                   % enables directedness histogram plot
-        displacement3by2 = 1;                   % enables displacement of all fields in a 3x2
+        disphist =1;                           % enables displacement histogram plot
+        directednessplot = 0;                   % enables directedness histogram plot
+        displacement3by2 = 0;                   % enables displacement of all fields in a 3x2
         densityplotDIR = 0;                     % enables density plot for directionality
         densityplotDISP = 0;                   % enables density plot for displacement
         densityDirTime = 0;                     % enables directionality over time plot for density
@@ -262,11 +262,12 @@ for z = 1:6
             end
         end % end time loop
         %% Static Plot Visualization
-        xavg = mean(abs(x_time - x_time(1,:)),2);
-        yavg = mean(abs(y_time - y_time(1,:)),2);
-        displacementrunx = (xavg(runTime, 1) - xavg(1,1)) / runTime;
-        displacementruny = (yavg(runTime, 1) - yavg(1,1)) / runTime;
-        displacement_run(p,1) = sqrt(displacementruny^2 + displacementrunx^2);
+        x_centered = abs(x_time - x_time(1,:));
+        y_centered = abs(y_time - y_time(1,:));
+        displacement_mag = sqrt(x_centered.^2+y_centered.^2);
+%         displacementrunx = (xavg(runTime, 1) - xavg(1,1)) / runTime;
+%         displacementruny = (yavg(runTime, 1) - yavg(1,1)) / runTime;
+        displacement_run(p,1) = mean(displacement_mag(runTime, :)) / runTime;
 
         x_raw = (x_time - x_time(1,:));
         y_raw = (y_time - y_time(1,:));
