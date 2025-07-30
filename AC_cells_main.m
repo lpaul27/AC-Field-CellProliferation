@@ -14,7 +14,7 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     densityplotDIR densityplotDISP densityDirTime
 
 tStart = tic;
-runs = 6;
+runs = 5;
 fields = [0, 30, 50, 75,  100, 200];
 densityfields = [15, 30, 50, 75, 100, 200];
 noises = [0.26, 0.24, 0.2, 0.28, 0.32, 0.56];
@@ -23,7 +23,7 @@ noiseX = [0.28,0.28,0.23,0.33,0.37,0.61];
 v0 = [0.083, 0.11, 0.185, 0.07, 0.059, 0.026];
 nufric = [1, 1.15, 1.43, 0.93, 0.81,0.46];
 
-
+Directrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6"];
 directedness = zeros(length(fields),1);
 dispAvg = zeros(length(fields),1);
 cell_posData = struct();
@@ -38,14 +38,17 @@ for z = 1:6
         % Begin Simulation timer
         %% Domain Parameters
         runTime = 120;                           % total runTime of simulation
-        dt = 5;                                  % time step
-        if(~mod(p,2))
-            NumCells =35;                           % number of cells in simulation
+        dt = 1;                                  % time step
+        NumCells = 50;
+        if(1)
+            if(~mod(p,2))
+                NumCells =35;                           % number of cells in simulation
+            end
+            if(mod(p,2))
+                NumCells = 210;
+            end
         end
-        if(mod(p,2))
-            NumCells = 210;
-        end
-        vels_med = 0.083;                        % initial velocity param center point
+        vels_med = 1;                        % initial velocity param center point
         lbox = 2050;                             % size of the box particles are confined to
         R_boundary = lbox/6;                     % Sample domain size for cells to begin
         chill = 15;                              % chill time to suppress cell death
@@ -68,7 +71,7 @@ for z = 1:6
         neighborWeight = 1;                  % group movement weighting
         c_rec = 0.9;                            % mean receptor concentration (normalized)
         c_lig = 0.9;                            % mean ligand concentration (normalized)
-        adh = 0;                                % adhesive coefficient
+        adh = 1e-4;                                % adhesive coefficient
 
         %% Cell-Field parameters
         % Discrete Parameters
@@ -76,10 +79,10 @@ for z = 1:6
         rand_division = 0;                      % Enables field-directed mitosis
         Discrete = 0;                           % Enables Discrete field change
 
-        ExMax = densityfields(z) / 3750;               % x field max
+        ExMax = fields(z) / 3000; %150              % x field max
         EyMax = 0;                              % y field max
         absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
-       
+
 
         % Sinusoidal parameters
         % f(t) = A sin(wt + o)                  % form
@@ -91,7 +94,7 @@ for z = 1:6
         %% Simulation type parameters
         dim1noise = 1;                          % signals type of noise (1D)
         %eta = noise * (1+ alpha / (emax/absE + 1));
-        eta = 0.28;
+        eta = 0.15;
         dim2noise = 0;                          % signals type of noise (2D)
         etaX = eta / 2;         % X component of noise strength
         etaY = 3*eta;         % Y component of noise strength
@@ -114,11 +117,11 @@ for z = 1:6
         displacement = 0;                       % Enables 2D Displacement plot
         polarhist = 0;                          % Enables polar histogram plot
         disphist =0;                           % enables displacement histogram plot
-        directednessplot = 0;                   % enables directedness histogram plot
+        directednessplot = 1;                   % enables directedness histogram plot
         displacement3by2 = 1;                   % enables displacement of all fields in a 3x2
-        densityplotDIR = 1;                     % enables density plot for directionality
-        densityplotDISP = 0;                    % enables density plot for displacement
-        densityDirTime = 1;                     % enables directionality over time plot for density
+        densityplotDIR = 0;                     % enables density plot for directionality
+        densityplotDISP = 0;                   % enables density plot for displacement
+        densityDirTime = 0;                     % enables directionality over time plot for density
 
         %% Initialization of Variables
         % Preallocates values for optimal computation
@@ -268,41 +271,53 @@ for z = 1:6
         x_raw = (x_time - x_time(1,:));
         y_raw = (y_time - y_time(1,:));
         dispruntheta = mean(cos(atan2(y_raw(runTime,:) , x_raw(runTime, :))));
-        
+        posxrun_str = ["posxr1", "posxr2", "posxr3", "posxr4", "posxr5", "posxr6"];
+        posyrun_str = ["posyr1", "posyr2", "posyr3", "posyr4", "posyr5", "posyr6"];
         switch z
             case 1
                 cell_posData(p).posxr1 = x_time - x_time(1,:);
                 cell_posData(p).posyr1 = y_time - y_time(1,:);
                 cell_posData(p).theta1 = theta_time;
-                cell_posData(p).direct1 = cos(theta_time);
+                y_tmp = cell_posData(p).posyr1;
+                x_tmp = cell_posData(p).posxr1;
+                cell_posData(p).direct1 = cos(atan2(y_tmp, x_tmp));
             case 2
                 cell_posData(p).posxr2 = x_time - x_time(1,:);
                 cell_posData(p).posyr2 = y_time - y_time(1,:);
                 cell_posData(p).theta2 = theta_time;
-                cell_posData(p).direct2 = cos(theta_time);
-
+                y_tmp = cell_posData(p).posyr2;
+                x_tmp = cell_posData(p).posxr2;
+                cell_posData(p).direct2 = cos(atan2(y_tmp, x_tmp));
             case 3
                 cell_posData(p).posxr3 = x_time - x_time(1,:);
                 cell_posData(p).posyr3 = y_time - y_time(1,:);
                 cell_posData(p).theta3 = theta_time;
-                cell_posData(p).direct3 = cos(theta_time);
+                y_tmp = cell_posData(p).posyr3;
+                x_tmp = cell_posData(p).posxr3;
+                cell_posData(p).direct3 = cos(atan2(y_tmp, x_tmp));                
             case 4
                 cell_posData(p).posxr4 = x_time - x_time(1,:);
                 cell_posData(p).posyr4 = y_time - y_time(1,:);
                 cell_posData(p).theta4 = theta_time;
-                cell_posData(p).direct4 = cos(theta_time);
+                y_tmp = cell_posData(p).posyr4;
+                x_tmp = cell_posData(p).posxr4;
+                cell_posData(p).direct4 = cos(atan2(y_tmp, x_tmp)); 
             case 5
                 cell_posData(p).posxr5 = x_time - x_time(1,:);
                 cell_posData(p).posyr5 = y_time - y_time(1,:);
                 cell_posData(p).theta5 = theta_time;
-                cell_posData(p).direct5 = cos(theta_time);
+                y_tmp = cell_posData(p).posyr5;
+                x_tmp = cell_posData(p).posxr5;
+                cell_posData(p).direct5 = cos(atan2(y_tmp, x_tmp)); 
             case 6
                 cell_posData(p).posxr6 = x_time - x_time(1,:);
                 cell_posData(p).posyr6 = y_time - y_time(1,:);
                 cell_posData(p).theta6 = theta_time;
-                cell_posData(p).direct6 = cos(theta_time);
+                y_tmp = cell_posData(p).posyr6;
+                x_tmp = cell_posData(p).posxr6;
+                cell_posData(p).direct6 = cos(atan2(y_tmp, x_tmp)); 
         end
-        
+
 
     end
     dispAvg(z,1) = mean(displacement_run);
@@ -312,7 +327,7 @@ posxrun_str = ["posxr1", "posxr2", "posxr3", "posxr4", "posxr5", "posxr6"];
 posyrun_str = ["posyr1", "posyr2", "posyr3", "posyr4", "posyr5", "posyr6"];
 Directrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6"];
 
- for i = 1:length(fields)
+for i = 1:length(fields)
     for j = 1:runs
         cell_posData(i).posxmean = mean(cell_posData(j).(posxrun_str(i)),2);
         cell_posData(i).posxSD = std(cell_posData(j).(posxrun_str(i)),0,2);
@@ -324,8 +339,8 @@ Directrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6
         cell_posData(i).directionality_mean = mean(tmp(runTime,:),2);
         cell_posData(i).directionalitySD = std(tmp(runTime,:),0,2) / sqrt(runs);
     end
- end
- 
+end
+
 Visualize(x_time,y_time, theta_time, time_control, dispAvg, directedness, fields, cell_posData);
 
 % end timer of full sequence

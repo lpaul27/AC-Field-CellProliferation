@@ -199,7 +199,8 @@ if(~live)
 
         % Create grouped bar chart
         figure;
-        b = bar(electric_fields, data, 'grouped');  % grouped bar by default
+        %b = bar(electric_fields, data, 'grouped');  % grouped bar by default
+        b = bar(data, 'grouped');  % grouped bar by default
 
         % Set colors
         b(1).FaceColor = [0 0.5 1];   % blue
@@ -219,6 +220,7 @@ if(~live)
         groups = {'No EF', '30 mV/mm', '50 mV/mm', '75 mV/mm', '100 mV/mm', '200 mV/mm'};
         data_tmp = zeros(runTime,1);
         err_tmp = zeros(runTime,1);
+        quantitative_data = 0;
         % Example data
 
         for i = 1:length(groups)
@@ -231,7 +233,7 @@ if(~live)
         end
 
         if(quantitative_data)
-            data_exp = [0.05; 0.4; 0.5; 0.6; 0.8; 0.9];
+            data_exp = [-0.05; -0.4; -0.5; -0.6; -0.8; -0.9];
             electric_fields = [0,30, 50, 75, 100, 200];
         end
         % Combine into matrix (columns = datasets, rows = groups)
@@ -270,6 +272,7 @@ if(~live)
     end
 
     if(displacement3by2)
+        figure;
         tiledlayout(2,3);
 
         %plotting
@@ -295,7 +298,7 @@ if(~live)
         exportgraphics(gcf, 'sixPlots.pdf', 'ContentType', 'vector', 'Resolution',1000);
     end
 
-
+%% directionality histogram for density
     if(densityplotDIR)
         % compares directionality of different densities
         groups = {'15 mV/mm', '30 mV/mm', '50 mV/mm', '75 mV/mm', '100 mV/mm', '200 mV/mm'};
@@ -364,6 +367,8 @@ if(~live)
         set(gcf, 'Color', 'white')
 
     end
+
+    %% displacement histogram for density
 
     if(densityplotDISP)
         % compares displacement of different densities
@@ -447,9 +452,84 @@ if(~live)
 
     end
 
+    %% Directionality over time for density
+
     if(densityDirTime)
         % choose 100 mV/mm case for analysis
+        cosTheta = zeros(runTime, runs);
+        sumCellAnglex = zeros(runTime, runs);
+        directionalityX = zeros(runTime, runs);
+
+        for i = 1:runs
+            cosTheta(:,i) = mean((cell_posData(i).direct5),2);
+            sumCellAnglex(:,i) = sum((cosTheta(:,i)),2);
+            directionalityX(:,i) = sumCellAnglex(:,i);
+        end
         
+        cosThetaHigh = zeros(runTime, (runs/2));
+        cosThetaLow = zeros(runTime, (runs/2));
+        j = 1;
+        k = 1;
+        for i = 1:runs
+            if(mod(i,2))
+                cosThetaHigh(:,j) = cosTheta(:,i);
+                j = j+1;
+            end
+            if(~mod(i,2))
+                cosThetaLow(:,k) = cosTheta(:,i);
+                k = k+1;
+            end
+        end
+        directionalityMeanHigh = mean(cosThetaHigh,2);
+        directionalityMeanLow = mean(cosThetaLow,2);
+
+        if(quantitative_data)
+            confIntXrise = find(directionalityX >= (max(directionalityX) - 0.05));
+            confIntXfall = find(directionalityX <= (min(directionalityX(10:end)) + 0.05) & gradient(directionalityX) < 0);
+            XriseTime = confIntXrise(1,1);
+            XfallTime = confIntXfall(1,1);
+        end
+        figure
+        for i = 1:runs
+            if(mod(i,2))
+                s1 = scatter(2*time_control, cosTheta(:,i), "filled", 'd', "MarkerFaceColor", [0 0 1]);
+                s1.MarkerFaceAlpha = 0.5;
+            end
+            if(~mod(i,2))
+                s2 = scatter(2*time_control, cosTheta(:,i), "filled", "MarkerFaceColor", [1 0 0]);
+                s2.MarkerFaceAlpha = 0.5;
+            end
+            hold on
+
+        end
+        hold on
+        p1 = plot((time_control * 2), directionalityMeanHigh, '--', 'Linewidth', 2, 'Color', [0 0 1], 'DisplayName', 'High Density');
+        hold on
+        p2 = plot((time_control * 2), directionalityMeanLow, 'Linewidth', 2, 'Color', [1 0 0], 'DisplayName', 'Low Density');
+        xlabel('Time (minutes)', 'FontSize', 18);  ylabel('Directionality (\Phi_{x})', 'FontSize', 18);
+        %xticks = 2*(1:runTime)';
+        xticks([0 60 120 180 240])
+        xticklabels([0 60 120 180 240]);
+        xline((runTime / 2) * 2,'-.', 'FLIP', 'LineWidth',2, 'FontSize', 14);
+        ylim([-1.0,1.0]); xlim([0, runTime * 2]);
+
+        if(quantitative_data)
+            print1 = sprintf('X Rise: %f', XriseTime);
+            print2 = sprintf('X Fall: %f', (XfallTime - (runTime / 2)));
+            xline(XriseTime, ':', print1, 'Color', 'b', 'LineWidth',1);
+            xline(XfallTime, ':', print2, 'Color', 'b', 'LineWidth',1);
+        end
+
+        yline(0);
+        yline(1, '--');
+        yline(-1, '--');
+        txt1 = {'FIELD RIGHT'}; txt2 = {'FIELD LEFT'};
+        text((runTime*2 /9), 1.1, txt1, 'FontSize',14);
+        text((5*runTime /4), 1.1, txt2, 'FontSize',14);
+        set(gcf,'Color','white');
+        set(gca, 'FontSize', 18);
+        legend([p1 p2], 'Location', 'northwest')
+        exportgraphics(gcf, 'direcRise.pdf', 'ContentType', 'vector', 'Resolution',1000);
 
 
     end % end live conditional
