@@ -79,3 +79,7 @@ the experimentalists found in their dataset.
 Working towards developing a model which discovers the saturation in the displacement and directedness graphs.  
 Currently considering a variable noise in velocity rather than angle. So far no luck. Thinking towards possibly
  implemenitng the torque model into the dynamics of the system rather than force model of electrioc field.
+
+**9-11-2025**
+Begin of Fall semester research under McDonald Fellowship grant. Current works are to find different aspects which may affect
+cell response to a directional change based qualitatively on what is seen in the experimentalists' video.
