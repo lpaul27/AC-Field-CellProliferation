@@ -11,10 +11,10 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     death_pressure chill dim2directionality displacement live polarhist dim1directionality...
     Discrete Sine dim1displacement rand_division speed_decay dim1noise dim2noise etaX etaY ...                                                                                        %#ok<GVMIS>
     disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise displacement3by2 ...                                                                                               %#ok<GVMIS>
-    densityplotDIR densityplotDISP densityDirTime
+    densityplotDIR densityplotDISP densityDirTime tau E0
 
 %% Types of plots
-live = 0;                               % Enables Live Visualization
+live = 1;                               % Enables Live Visualization
 dim1directionality = 0;                 % enables 1D Directionality plot
 dim2directionality = 0;                 % Enables 2D Directionality plot
 dim1displacement = 0;                   % Enables 1D Displacement plot
@@ -28,7 +28,7 @@ densityplotDISP = 0;                   % enables density plot for displacement
 densityDirTime = 0;                     % enables directionality over time plot for density
 
 % Number of runs to be averaged across
-runs = 10;
+runs = 1;
 
 % begin start timer
 tStart = tic;
@@ -64,7 +64,9 @@ directedness = zeros(length(fields),1);
 dispAvg = zeros(length(fields),1);
 cell_posData = struct();
 cell_densitydata = struct();
-for z = 1:6
+
+% Set to a higher value if multiple field intended
+for z = 4:4
     
     % Preallocation for data storage
     displacement_run = zeros(runs, 1);
@@ -87,7 +89,7 @@ for z = 1:6
             end
         end
         vels_med = 0.7;                        % initial velocity param center point
-        lbox = 2050;                             % size of the box particles are confined to
+        lbox = 1050;                             % size of the box particles are confined to
         R_boundary = 150; %lbox/6;                     % Sample domain size for cells to begin
         chill = 15;                              % chill time to suppress cell death
 
@@ -115,7 +117,7 @@ for z = 1:6
         % Discrete Parameters
         Field = 1;                              % Signals to time varying fields that field is on if 1
         rand_division = 0;                      % Enables field-directed mitosis
-        Discrete = 0;                           % Enables Discrete field change
+        Discrete = 1;                           % Enables Discrete field change
 
         ExMax = fields(z) / 2500;               % x field max
         EyMax = 0;                              % y field max
@@ -135,12 +137,18 @@ for z = 1:6
         %eta = noise * (1+ alpha / (emax/absE + 1));
         eta = 0.15;
         dim2noise = 0;                          % signals type of noise (2D)
-        etaX = eta / 2;         % X component of noise strength
-        etaY = 3*eta;         % Y component of noise strength
-        velocity_noise = 0;                     % signals type of noise (velocity)
-        sigmax = eta * ExMax / (1 + absE);  % velocity based noise parameter (x)
-        sigmay = eta * EyMax / (1 + absE);  % velocity based noise parameter (y)
-        velocity_mag_noise = 0;                 % signals type of noise (velocity magnitude)
+            etaX = eta / 2;                     % X component of noise strength
+            etaY = 3*eta;                       % Y component of noise strength
+            velocity_noise = 0;                 % signals type of noise (velocity)
+            sigmax = eta * ExMax / (1 + absE);  % velocity based noise parameter (x)
+            sigmay = eta * EyMax / (1 + absE);  % velocity based noise parameter (y)
+            velocity_mag_noise = 0;             % signals type of noise (velocity magnitude)
+        
+        % Polarity (intracellular)
+        intracellular_signalling = 1;
+            tau = 1;                            % time scale parameter
+            E0 = 100;                           % Relative reference point for saturation
+            
 
         %% Plot parameters
 
@@ -184,7 +192,7 @@ for z = 1:6
         % Based on Monte Carlo initialization
 
         % Initialize cells
-        [x, y, vx, vy, Cradius, vel_ang] = Initialize();
+        [x, y, vx, vy, Cradius, vel_ang, polarity] = Initialize();
 
         %% Simulation loop
         for time = 1:runTime
@@ -236,6 +244,12 @@ for z = 1:6
             % cell-field force function
             [EF_x, EF_y, Epressure] = Electric_Force(Cradius, x, y, u, v, X, Y);
 
+            if(intracellular_signalling)
+                [polarity, vx, vy] = Polarization(polarity, EF_x, EF_y, vel_ang);
+                EF_x = zeros(NumCells, 1);
+                EF_y = zeros(NumCells, 1);
+            end
+
             timer(time, 2) = toc(CFtimer);
             % end cell-field timer
 
@@ -259,9 +273,9 @@ for z = 1:6
             timer(time,3) = toc(Steptimer);
 
             % Update cell size // Mitosis // Apoptosis
-            [Cradius,x, y, vx, vy, vel_ang, x_time, y_time, theta_time, RadTracker, R, G, B, Pressure, exempt, vx_time, vy_time, cell_lifetime, tmp_time]...
+            [Cradius,x, y, vx, vy, vel_ang, x_time, y_time, theta_time, RadTracker, R, G, B, Pressure, exempt, vx_time, vy_time, cell_lifetime, tmp_time, polarity]...
                 = RadGrowth...
-                (Cradius, Pressure, x, y, vel_ang, vx, vy, x_time, y_time, time, theta_time,RadTracker, R, G, B, exempt, vx_time, vy_time, cell_lifetime, Ex_strength, Ey_strength, growth_rate, tmp_time);
+                (Cradius, Pressure, x, y, vel_ang, vx, vy, x_time, y_time, time, theta_time,RadTracker, R, G, B, exempt, vx_time, vy_time, cell_lifetime, Ex_strength, Ey_strength, growth_rate, tmp_time, polarity);
 
             %% Live Simulation visualization plot
             if(live)

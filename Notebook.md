@@ -83,3 +83,11 @@ Currently considering a variable noise in velocity rather than angle. So far no 
 **9-11-2025**
 Begin of Fall semester research under McDonald Fellowship grant. Current works are to find different aspects which may affect
 cell response to a directional change based qualitatively on what is seen in the experimentalists' video.
+What is the current question at hand?
+These cells exhibit anti-directed motion in the direction of an applied electric field. That is: Cells will proliferate randomly, 
+but if an electric field is applied, they will travel anti-parallel to the electric field. Current research models this as a force. 
+As a force: if the cells move against the electric field, and then the electric field changes direction, the
+ cells will travel along a parabolic path to reorient anti-parallel to the electric field. This is not what we see experimentally, 
+we see an almost discrete change (though a real rise time is quantifiable, meaning not discrete). A torque based rotational model 
+has been proposed but produces similar parabolic trajectories. This evidence supports the idea that there may not be an exterior 
+force at play, but rather that the cells themselves have intracellular properties that signal a response, conveyed by their motion.

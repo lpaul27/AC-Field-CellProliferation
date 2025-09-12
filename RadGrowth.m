@@ -1,5 +1,5 @@
-function            [Cradius,x, y, vx, vy, vel_ang, x_time, y_time, theta_time, RadTracker, R, G, B, Pressure, exempt, vx_time, vy_time, cell_lifetime, tmp_time]...
-    = RadGrowth(Cradius0, Pressure, x, y, vel_ang, vx, vy, x_time, y_time, time, theta_time, RadTracker, R, G, B, exempt, vx_time, vy_time, cell_lifetime, Ex_strength, Ey_strength, growth_rate, tmp_time)
+function            [Cradius,x, y, vx, vy, vel_ang, x_time, y_time, theta_time, RadTracker, R, G, B, Pressure, exempt, vx_time, vy_time, cell_lifetime, tmp_time, polarity]...
+    = RadGrowth(Cradius0, Pressure, x, y, vel_ang, vx, vy, x_time, y_time, time, theta_time, RadTracker, R, G, B, exempt, vx_time, vy_time, cell_lifetime, Ex_strength, Ey_strength, growth_rate, tmp_time, polarity)
 %% Allows cell growth, mitosis and death
 
 % declaration of constants
@@ -69,6 +69,7 @@ for i = 1:NumCells
         cell_lifetime(i, 1) = 0;
         tmp_time(i,1) = 0;
         tmp_time(NumCells,1) = 0;
+        polarity(NumCells, 1) = 0;
 
     end % end mitosis conditional
 
