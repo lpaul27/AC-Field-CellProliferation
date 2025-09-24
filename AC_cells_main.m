@@ -145,8 +145,8 @@ for z = 4:4
             velocity_mag_noise = 0;             % signals type of noise (velocity magnitude)
         
         % Polarity (intracellular)
-        intracellular_signalling = 1;
-            tau = 1;                            % time scale parameter
+        intracellular_signalling = 0;
+            tau = 50;                            % time scale parameter
             E0 = 100;                           % Relative reference point for saturation
             
 
@@ -173,7 +173,9 @@ for z = 4:4
         cell_lifetime = zeros(NumCells, 1);     % cell lifetime tracker
         growth_rate = zeros(NumCells, 1);       % initializes growth rate for all cells
         tmp_time = zeros(NumCells, 1);
-
+        EF_x = zeros(NumCells, 1);
+        EF_y = zeros(NumCells, 1);
+        Epressure = zeros(NumCells, 1);
 
         %% Plotting Parameters
         % Parameters for live simulation visualization
@@ -242,12 +244,11 @@ for z = 4:4
             CFtimer = tic;
 
             % cell-field force function
-            [EF_x, EF_y, Epressure] = Electric_Force(Cradius, x, y, u, v, X, Y);
-
+            if(~intracellular_signalling)
+                [EF_x, EF_y, Epressure] = Electric_Force(Cradius, x, y, u, v, X, Y);
+            end
             if(intracellular_signalling)
-                [polarity, vx, vy] = Polarization(polarity, EF_x, EF_y, vel_ang);
-                EF_x = zeros(NumCells, 1);
-                EF_y = zeros(NumCells, 1);
+                [polarity, vx, vy] = Polarization(polarity, ExMax, EyMax, vel_ang, time);
             end
 
             timer(time, 2) = toc(CFtimer);
@@ -368,7 +369,7 @@ for z = 4:4
 end
 
 
-for i = 1:length(fields)
+for i = 1:length(1)
     for j = 1:runs
         cell_posData(i).posxmean = mean(cell_posData(j).(posxrun_str(i)),2);
         cell_posData(i).posxSD = std(cell_posData(j).(posxrun_str(i)),0,2);
