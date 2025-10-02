@@ -67,7 +67,6 @@ cell_densitydata = struct();
 
 % Set to a higher value if multiple field intended
 for z = 4:4
-    
     % Preallocation for data storage
     displacement_run = zeros(runs, 1);
     displacementAvg = zeros(runs,  1);
@@ -122,7 +121,7 @@ for z = 4:4
         ExMax = fields(z) / 2500;               % x field max
         EyMax = 0;                              % y field max
         absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
-        vels_med = vels_med*(1+fields(z)/200);                        % initial velocity param center point
+        vels_med = vels_med*(1+fields(z)/200);  % initial velocity param center point
 
 
         % Sinusoidal parameters
@@ -317,6 +316,11 @@ for z = 4:4
         dispruntheta = mean(cos(atan2(y_raw(runTime,:) , x_raw(runTime, :))),2);
         posxrun_str = ["posxr1", "posxr2", "posxr3", "posxr4", "posxr5", "posxr6"];
         posyrun_str = ["posyr1", "posyr2", "posyr3", "posyr4", "posyr5", "posyr6"];
+
+        z = 1;              % resets field strength to index correctly
+        %% Important: Leave z as the index of the loop if doing all field strengths, otherwise, 
+        % it must be indexed to 1
+
         switch z
             case 1
                 cell_posData(p).posxr1 = x_time - x_time(1,:);
