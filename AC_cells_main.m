@@ -14,21 +14,21 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     densityplotDIR densityplotDISP densityDirTime tau E0
 
 %% Types of plots
-live = 1;                               % Enables Live Visualization
+live = 0;                               % Enables Live Visualization
 dim1directionality = 0;                 % enables 1D Directionality plot
 dim2directionality = 0;                 % Enables 2D Directionality plot
 dim1displacement = 0;                   % Enables 1D Displacement plot
 displacement = 0;                       % Enables 2D Displacement plot
 polarhist = 0;                          % Enables polar histogram plot
 disphist =1;                           % enables displacement histogram plot
-directednessplot = 1;                   % enables directedness histogram plot
-displacement3by2 = 0;                   % enables displacement of all fields in a 3x2
+directednessplot = 0;                   % enables directedness histogram plot
+displacement3by2 = 1;                   % enables displacement of all fields in a 3x2
 densityplotDIR = 0;                     % enables density plot for directionality
 densityplotDISP = 0;                   % enables density plot for displacement
 densityDirTime = 0;                     % enables directionality over time plot for density
 
 % Number of runs to be averaged across
-runs = 1;
+runs = 3;
 
 % begin start timer
 tStart = tic;
@@ -66,7 +66,7 @@ cell_posData = struct();
 cell_densitydata = struct();
 
 % Set to a higher value if multiple field intended
-for z = 4:4
+for z = 1:6
     % Preallocation for data storage
     displacement_run = zeros(runs, 1);
     displacementAvg = zeros(runs,  1);
@@ -144,9 +144,9 @@ for z = 4:4
             velocity_mag_noise = 0;             % signals type of noise (velocity magnitude)
         
         % Polarity (intracellular)
-        intracellular_signalling = 0;
-            tau = 50;                            % time scale parameter
-            E0 = 100;                           % Relative reference point for saturation
+        intracellular_signalling = 1;
+            tau = 20;                            % time scale parameter
+            E0 = 50;                           % Relative reference point for saturation
             
 
         %% Plot parameters
@@ -317,7 +317,7 @@ for z = 4:4
         posxrun_str = ["posxr1", "posxr2", "posxr3", "posxr4", "posxr5", "posxr6"];
         posyrun_str = ["posyr1", "posyr2", "posyr3", "posyr4", "posyr5", "posyr6"];
 
-        z = 1;              % resets field strength to index correctly
+        %z = 1;              % resets field strength to index correctly
         %% Important: Leave z as the index of the loop if doing all field strengths, otherwise, 
         % it must be indexed to 1
 
