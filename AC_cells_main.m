@@ -20,15 +20,15 @@ dim2directionality = 0;                 % Enables 2D Directionality plot
 dim1displacement = 0;                   % Enables 1D Displacement plot
 displacement = 0;                       % Enables 2D Displacement plot
 polarhist = 0;                          % Enables polar histogram plot
-disphist =1;                           % enables displacement histogram plot
+disphist =0;                            % enables displacement histogram plot
 directednessplot = 0;                   % enables directedness histogram plot
-displacement3by2 = 1;                   % enables displacement of all fields in a 3x2
-densityplotDIR = 0;                     % enables density plot for directionality
-densityplotDISP = 0;                   % enables density plot for displacement
+displacement3by2 = 0;                   % enables displacement of all fields in a 3x2
+densityplotDIR = 1;                     % enables density plot for directionality
+densityplotDISP = 1;                    % enables density plot for displacement
 densityDirTime = 0;                     % enables directionality over time plot for density
 
 % Number of runs to be averaged across
-runs = 3;
+runs = 30;
 
 % begin start timer
 tStart = tic;
@@ -56,7 +56,7 @@ Directrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6
 
 fields = [0, 30, 50, 75,  100, 200];
 densityfields = [15, 30, 50, 75, 100, 200];
-density = false;        % signals that a varying number of cells is intended
+density = 1;        % signals that a varying number of cells is intended
 % *default is 50 cells 
 
 %% Preallocation
@@ -116,7 +116,7 @@ for z = 1:6
         % Discrete Parameters
         Field = 1;                              % Signals to time varying fields that field is on if 1
         rand_division = 0;                      % Enables field-directed mitosis
-        Discrete = 1;                           % Enables Discrete field change
+        Discrete = 0;                           % Enables Discrete field change
 
         ExMax = fields(z) / 2500;               % x field max
         EyMax = 0;                              % y field max
@@ -144,7 +144,7 @@ for z = 1:6
             velocity_mag_noise = 0;             % signals type of noise (velocity magnitude)
         
         % Polarity (intracellular)
-        intracellular_signalling = 1;
+        intracellular_signalling = 0;
             tau = 20;                            % time scale parameter
             E0 = 50;                           % Relative reference point for saturation
             
@@ -373,7 +373,7 @@ for z = 1:6
 end
 
 
-for i = 1:length(1)
+for i = 1:length(6)
     for j = 1:runs
         cell_posData(i).posxmean = mean(cell_posData(j).(posxrun_str(i)),2);
         cell_posData(i).posxSD = std(cell_posData(j).(posxrun_str(i)),0,2);
@@ -385,6 +385,7 @@ for i = 1:length(1)
         cell_posData(i).directionality_mean = mean(tmp(runTime,:),2);
         cell_posData(i).directionalitySD = std(tmp(runTime,:),0,2) / sqrt(runs);
     end
+
 end
 
 Visualize(x_time,y_time, theta_time, time_control, dispAvg, directedness, fields, cell_posData);
