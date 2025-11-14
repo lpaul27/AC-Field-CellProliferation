@@ -20,15 +20,15 @@ dim2directionality = 0;                 % Enables 2D Directionality plot
 dim1displacement = 0;                   % Enables 1D Displacement plot
 displacement = 0;                       % Enables 2D Displacement plot
 polarhist = 0;                          % Enables polar histogram plot
-disphist =0;                            % enables displacement histogram plot
+disphist =1;                            % enables displacement histogram plot
 directednessplot = 0;                   % enables directedness histogram plot
 displacement3by2 = 0;                   % enables displacement of all fields in a 3x2
-densityplotDIR = 1;                     % enables density plot for directionality
-densityplotDISP = 1;                    % enables density plot for displacement
+densityplotDIR = 0;                     % enables density plot for directionality
+densityplotDISP = 0;                    % enables density plot for displacement
 densityDirTime = 0;                     % enables directionality over time plot for density
 
 % Number of runs to be averaged across
-runs = 30;
+runs = 10;                               
 
 % begin start timer
 tStart = tic;
@@ -56,7 +56,7 @@ Directrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6
 
 fields = [0, 30, 50, 75,  100, 200];
 densityfields = [15, 30, 50, 75, 100, 200];
-density = 1;        % signals that a varying number of cells is intended
+density = 0;        % signals that a varying number of cells is intended
 % *default is 50 cells 
 
 %% Preallocation
@@ -64,13 +64,16 @@ directedness = zeros(length(fields),1);
 dispAvg = zeros(length(fields),1);
 cell_posData = struct();
 cell_densitydata = struct();
-
+if(density)
+    runs = runs * 2;
+end
 % Set to a higher value if multiple field intended
 for z = 1:6
     % Preallocation for data storage
     displacement_run = zeros(runs, 1);
     displacementAvg = zeros(runs,  1);
     dispruntheta = zeros(runs,1);
+    
 
     %% Inner loop for number of runs at desired field strength
     for p = 1:runs
@@ -94,7 +97,7 @@ for z = 1:6
 
         %% Cell Parameters
         critRad = 12;                            % critical radius for mitosis
-        Ccyclet = 1000;                      % benchmark cell cycle time
+        Ccyclet = 800;                      % benchmark cell cycle time
         death_rate = 1e-200;                     % Cell death rate
         death_pressure = 1000;                   % Pressure required for apoptosis
         critical_pressure = 0.05;                % Critical presssure for dormancy
@@ -103,9 +106,9 @@ for z = 1:6
         speed_decay = 100;                       % speed decay rate for mitosis
 
         %% Cell-cell parameters
-        k = 0.01;                               % constant in force repulsion calculation (~elasticity)
+        k = 0.1;                               % constant in force repulsion calculation (~elasticity)
         daughter_noise = 0.1;                   % noise strength in mitosis separation
-        nu = 1;                                 % friction factor
+        nu = 0.1;                                 % friction factor
         mu = 1;                                 % electrical mobility
         neighborWeight = 1;                  % group movement weighting
         c_rec = 0.9;                            % mean receptor concentration (normalized)
@@ -118,11 +121,9 @@ for z = 1:6
         rand_division = 0;                      % Enables field-directed mitosis
         Discrete = 0;                           % Enables Discrete field change
 
-        ExMax = fields(z) / 2500;               % x field max
+        ExMax = fields(z) / 20;               % x field max
         EyMax = 0;                              % y field max
         absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
-        vels_med = vels_med*(1+fields(z)/200);  % initial velocity param center point
-
 
         % Sinusoidal parameters
         % f(t) = A sin(wt + o)                  % form
@@ -133,7 +134,6 @@ for z = 1:6
 
         %% Simulation type parameters
         dim1noise = 1;                          % signals type of noise (1D)
-        %eta = noise * (1+ alpha / (emax/absE + 1));
         eta = 0.15;
         dim2noise = 0;                          % signals type of noise (2D)
             etaX = eta / 2;                     % X component of noise strength
@@ -143,7 +143,7 @@ for z = 1:6
             sigmay = eta * EyMax / (1 + absE);  % velocity based noise parameter (y)
             velocity_mag_noise = 0;             % signals type of noise (velocity magnitude)
         
-        % Polarity (intracellular)
+        %% Polarity (intracellular)
         intracellular_signalling = 0;
             tau = 20;                            % time scale parameter
             E0 = 50;                           % Relative reference point for saturation
@@ -375,17 +375,16 @@ end
 
 for i = 1:length(6)
     for j = 1:runs
-        cell_posData(i).posxmean = mean(cell_posData(j).(posxrun_str(i)),2);
-        cell_posData(i).posxSD = std(cell_posData(j).(posxrun_str(i)),0,2);
+        cell_posData(j).posxmean = mean(cell_posData(j).(posxrun_str(i)),2);
+        cell_posData(j).posxSD = std(cell_posData(j).(posxrun_str(i)),0,2);
 
-        cell_posData(i).posymean = mean(cell_posData(j).(posyrun_str(i)),2);
-        cell_posData(i).posySD = std(cell_posData(j).(posyrun_str(i)),0,2);
+        cell_posData(j).posymean = mean(cell_posData(j).(posyrun_str(i)),2);
+        cell_posData(j).posySD = std(cell_posData(j).(posyrun_str(i)),0,2);
 
         tmp = cell_posData(j).(Directrun_str(i));
         cell_posData(i).directionality_mean = mean(tmp(runTime,:),2);
         cell_posData(i).directionalitySD = std(tmp(runTime,:),0,2) / sqrt(runs);
     end
-
 end
 
 Visualize(x_time,y_time, theta_time, time_control, dispAvg, directedness, fields, cell_posData);

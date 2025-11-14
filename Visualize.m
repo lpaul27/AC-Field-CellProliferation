@@ -220,7 +220,7 @@ if(~live)
         groups = {'No EF', '30 mV/mm', '50 mV/mm', '75 mV/mm', '100 mV/mm', '200 mV/mm'};
         data_tmp = zeros(runTime,1);
         err_tmp = zeros(runTime,1);
-        quantitative_data = 0;
+        quantitative_data = 1;
         % Example data
 
         for i = 1:length(groups)
@@ -329,7 +329,7 @@ if(~live)
         LD_err = std(std_low);
 
         data = [low_density', high_density'];
-        err = [LD_err', HD_err'];
+       % err = [LD_err', HD_err'];
 
         figure;
 
@@ -343,8 +343,8 @@ if(~live)
 
         for i =1:length(groups)
             for j = 1:2
-                er = errorbar(xBar(i,j),data(i,j), err(i,j), 'o');
-                er.Color = [0 0 0];
+               % er = errorbar(xBar(i,j),data(i,j), err(i,j), 'o');
+               % er.Color = [0 0 0];
                 hold on
             end
         end
