@@ -20,7 +20,7 @@ dim2directionality = 0;                 % Enables 2D Directionality plot
 dim1displacement = 0;                   % Enables 1D Displacement plot
 displacement = 0;                       % Enables 2D Displacement plot
 polarhist = 0;                          % Enables polar histogram plot
-disphist =1;                            % enables displacement histogram plot
+disphist =0;                            % enables displacement histogram plot
 directednessplot = 0;                   % enables directedness histogram plot
 displacement3by2 = 0;                   % enables displacement of all fields in a 3x2
 densityplotDIR = 0;                     % enables density plot for directionality
@@ -56,7 +56,7 @@ Directrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6
 
 fields = [0, 30, 50, 75,  100, 200];
 densityfields = [15, 30, 50, 75, 100, 200];
-density = 0;        % signals that a varying number of cells is intended
+density = 1;        % signals that a varying number of cells is intended
 % *default is 50 cells 
 
 %% Preallocation
@@ -97,7 +97,7 @@ for z = 1:6
 
         %% Cell Parameters
         critRad = 12;                            % critical radius for mitosis
-        Ccyclet = 800;                      % benchmark cell cycle time
+        Ccyclet = 600;                      % benchmark cell cycle time
         death_rate = 1e-200;                     % Cell death rate
         death_pressure = 1000;                   % Pressure required for apoptosis
         critical_pressure = 0.05;                % Critical presssure for dormancy
@@ -108,7 +108,7 @@ for z = 1:6
         %% Cell-cell parameters
         k = 0.1;                               % constant in force repulsion calculation (~elasticity)
         daughter_noise = 0.1;                   % noise strength in mitosis separation
-        nu = 0.1;                                 % friction factor
+        nu = 0.6;                                 % friction factor
         mu = 1;                                 % electrical mobility
         neighborWeight = 1;                  % group movement weighting
         c_rec = 0.9;                            % mean receptor concentration (normalized)
@@ -121,7 +121,7 @@ for z = 1:6
         rand_division = 0;                      % Enables field-directed mitosis
         Discrete = 0;                           % Enables Discrete field change
 
-        ExMax = fields(z) / 20;               % x field max
+        ExMax = fields(z) / 80;               % x field max
         EyMax = 0;                              % y field max
         absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
 
@@ -372,8 +372,14 @@ for z = 1:6
     directedness(z,1) = (dispruntheta);
 end
 
+if(Field)
+    iterate = length(fields);
+else 
+    iterate = 1;
+end
 
-for i = 1:length(6)
+for i = 1:iterate
+    tmp1 = zeros(runs, 1);
     for j = 1:runs
         cell_posData(j).posxmean = mean(cell_posData(j).(posxrun_str(i)),2);
         cell_posData(j).posxSD = std(cell_posData(j).(posxrun_str(i)),0,2);
@@ -381,10 +387,12 @@ for i = 1:length(6)
         cell_posData(j).posymean = mean(cell_posData(j).(posyrun_str(i)),2);
         cell_posData(j).posySD = std(cell_posData(j).(posyrun_str(i)),0,2);
 
-        tmp = cell_posData(j).(Directrun_str(i));
-        cell_posData(i).directionality_mean = mean(tmp(runTime,:),2);
-        cell_posData(i).directionalitySD = std(tmp(runTime,:),0,2) / sqrt(runs);
+        tmp0 = mean(cell_posData(j).(Directrun_str(i)));
+        tmp1(j,1) = mean(tmp0,2);
     end
+    cell_posData(i).directionality_mean = mean(tmp1);
+    cell_posData(i).directionalitySD = std(tmp1, 0) / sqrt(runs);
+    
 end
 
 Visualize(x_time,y_time, theta_time, time_control, dispAvg, directedness, fields, cell_posData);
