@@ -28,7 +28,7 @@ densityplotDISP = 0;                    % enables density plot for displacement
 densityDirTime = 0;                     % enables directionality over time plot for density
 
 % Number of runs to be averaged across
-runs = 10;                               
+runs = 15;                               
 
 % begin start timer
 tStart = tic;
@@ -74,7 +74,6 @@ for z = 1:6
     displacementAvg = zeros(runs,  1);
     dispruntheta = zeros(runs,1);
     
-
     %% Inner loop for number of runs at desired field strength
     for p = 1:runs
         % Begin Simulation timer
@@ -97,7 +96,7 @@ for z = 1:6
 
         %% Cell Parameters
         critRad = 12;                            % critical radius for mitosis
-        Ccyclet = 600;                      % benchmark cell cycle time
+        Ccyclet = 400;                      % benchmark cell cycle time
         death_rate = 1e-200;                     % Cell death rate
         death_pressure = 1000;                   % Pressure required for apoptosis
         critical_pressure = 0.05;                % Critical presssure for dormancy

@@ -94,7 +94,7 @@ Pressure = (sum(Pressure))';
 
 [angleGrid] = meshgrid(vel_ang);
 % dynamic allignment radius vector
-alignment_radius = 2 * Cradius;
+alignment_radius = 20 * Cradius;
 
 % Sort by grid
 index_grid = (dist_btw_cell <= alignment_radius & dist_btw_cell > 0);
