@@ -23,8 +23,8 @@ function [] = Visualize(x_time,y_time, theta_time, time_control, dispAvg, direct
 
 %% Begin Function
 global NumCells runTime displacement live dim2directionality polarhist dim1directionality dim1displacement...         %#ok<GVMIS>
-    disphist directednessplot ExMax displacement3by2 runs densityplotDIR densityplotDISP densityDirTime%#ok<GVMIS>
-
+    disphist directednessplot ExMax displacement3by2 runs densityplotDIR densityplotDISP densityDirTime...  %#ok<GVMIS>
+    MeanSquareDisplacement
 fieldboundslx = [-150, -200, -200, -250, -250, -250];
 fieldboundshx = [150, 100, 100, 50, 50, 50];
 fieldboundshy = [150, 150, 150,  150, 150, 150];
@@ -201,7 +201,57 @@ if(~live)
         figure;
         %b = bar(electric_fields, data, 'grouped');  % grouped bar by default
         b = bar(data, 'grouped');  % grouped bar by default
+        
+               groups = {'No EF', '30 mV/mm', '50 mV/mm', '75 mV/mm', '100 mV/mm', '200 mV/mm'};
+        data_sim = zeros(length(fields),1);
+        err_sim = zeros(length(fields),1);
+        quantitative_data = 1;
+        % Example data
 
+        for i = 1:length(groups)
+            data_sim(i,1) = cell_posData(i).directionality_mean;
+            err_sim(i,1) = cell_posData(i).directionalitySD;
+        end
+
+        data_exp = [-0.05; -0.4; -0.5; -0.6; -0.8; -0.9];
+        err_exp = [0;0;0;0;0;0];
+        % Combine into matrix (columns = datasets, rows = groups)
+        data = [data_sim, data_exp];  % [6x2] matrix
+        err = [err_sim, err_exp];
+        % Create grouped bar chart
+        figure;
+        b = bar(data);
+        xBar = zeros(6,2);
+        hold on
+
+        for i = 1:2
+            xBar(:, i) = b(i).XEndPoints;
+        end
+
+        for i =1:length(groups)
+            for j = 1:2
+                er = errorbar(xBar(i,j),data(i,j), err(i,j), 'o');
+                er.Color = [0 0 0];
+                hold on
+            end
+        end
+        hold on
+
+        % Set colors
+        b(1).FaceColor = [0.5 0.5 0.5];   % blue
+        b(2).FaceColor = [1 0.4 0];   % orange
+
+        % Label settings
+        set(gca, 'XTickLabel', groups, 'XTickLabelRotation', 45, 'FontSize', 18, 'FontWeight', 'bold');
+
+        ylabel('Directionality \Phi_x', 'FontSize',18);
+        yticks([-1.0, -0.8, -0.6,-0.4, -0.2, 0])
+        ylim([-1.0 0]);
+
+        %legend({'Simulation', 'Experiment'}, 'Location', 'northwest');
+        box on;
+        set(gca,'fontsize',18);
+        set(gcf, 'Color', 'white')
         % Set colors
         b(1).FaceColor = [0 0.5 1];   % blue
         b(2).FaceColor = [1 0.4 0];   % orange
@@ -218,46 +268,50 @@ if(~live)
 
     if(directednessplot)
         groups = {'No EF', '30 mV/mm', '50 mV/mm', '75 mV/mm', '100 mV/mm', '200 mV/mm'};
-        data_tmp = zeros(runTime,1);
-        err_tmp = zeros(runTime,1);
+        data_sim = zeros(length(fields),1);
+        err_sim = zeros(length(fields),1);
         quantitative_data = 1;
         % Example data
 
         for i = 1:length(groups)
-
-            data_tmp(:, i) = cell_posData(i).directionality_mean;  % Make sure dispAvg is a column vector
-            err_tmp(:,i) = cell_posData(i).directionalitySD;
-            data_sim = data_tmp(runTime,:)';
-            err = err_tmp(runTime,:)';
+            data_sim(i,1) = cell_posData(i).directionality_mean;
+            err_sim(i,1) = cell_posData(i).directionalitySD;
 
         end
 
         if(quantitative_data)
             data_exp = [-0.05; -0.4; -0.5; -0.6; -0.8; -0.9];
-            electric_fields = [0,30, 50, 75, 100, 200];
+            err_exp = [0;0;0;0;0;0];
         end
         % Combine into matrix (columns = datasets, rows = groups)
-        if(quantitative_data)
-            data = [data_sim, data_exp];  % [6x2] matrix
-        else
-            data = data_sim;
-        end
+        data = [data_sim, data_exp];  % [6x2] matrix
+        err = [err_sim, err_exp];
         % Create grouped bar chart
         figure;
         b = bar(data);
+
+        xBar = zeros(6,2);
+
         hold on
-        er = errorbar((1:length(groups)),data, err, 'o');
-        er.Color = [0 0 0];
 
-        % Set colors (optional)
-        b(1).FaceColor = [0.5 0.5 0.5];   % blue
-
-        if(quantitative_data)
-            b(2).FaceColor = [1 0.4 0];   % orange
+        for i = 1:2
+            xBar(:, i) = b(i).XEndPoints;
         end
 
+        for i =1:length(groups)
+            for j = 1:2
+                er = errorbar(xBar(i,j),data(i,j), err(i,j), 'o');
+                er.Color = [0 0 0];
+                hold on
+            end
+        end
+        hold on
+
+        % Set colors
+        b(1).FaceColor = [0.5 0.5 0.5];   % blue
+        b(2).FaceColor = [1 0.4 0];   % orange
+
         % Label settings
-        %set(gca, 'XTickLabel', electric_fields, 'XTickLabel', groups, 'XTickLabelRotation', 45);
         set(gca, 'XTickLabel', groups, 'XTickLabelRotation', 45, 'FontSize', 18, 'FontWeight', 'bold');
 
         ylabel('Directionality \Phi_x', 'FontSize',18);
@@ -323,13 +377,13 @@ if(~live)
             end
         end
 
-        high_density = mean(tmp_high);
-        low_density = mean(tmp_low);
-        HD_err = std(std_high);
-        LD_err = std(std_low);
+        high_density = tmp_high(runTime, :);
+        low_density = tmp_low(runTime, :);
+        HD_err = std_high(runTime, :);
+        LD_err = std_low(runTime, :);
 
         data = [low_density', high_density'];
-       % err = [LD_err', HD_err'];
+        err = [LD_err', HD_err'];
 
         figure;
 
@@ -343,8 +397,8 @@ if(~live)
 
         for i =1:length(groups)
             for j = 1:2
-               % er = errorbar(xBar(i,j),data(i,j), err(i,j), 'o');
-               % er.Color = [0 0 0];
+               er = errorbar(xBar(i,j),data(i,j), err(i,j), 'o');
+               er.Color = [0 0 0];
                 hold on
             end
         end
@@ -531,6 +585,30 @@ if(~live)
         legend([p1 p2], 'Location', 'northwest')
         exportgraphics(gcf, 'direcRise.pdf', 'ContentType', 'vector', 'Resolution',1000);
 
+    end % end density based directionality
 
-    end % end live conditional
+    %% Mean Square Displacement Plot over time
+    if(MeanSquareDisplacement)
+        
+        square_D = zeros(runTime, runs);
+        MSD = zeros(runTime, length(fields));
+        %MSD_SD = size(MSD);
+        for i = 1:length(fields)
+            for j = 1:runs
+                tmp_sqd = cell_posData(j).posxr1.^2 + cell_posData(j).posyr1.^2;
+
+                square_D(:, j) = mean(tmp_sqd,2);
+            end
+            MSD(:, i) = mean(square_D,2);
+            %MSD_SD(:,i) = std(square_D);
+        end
+
+        scatter((1:runTime), MSD)
+        xlabel('Time (Steps)')
+        ylabel('Mean Square Displacement (\mu m^2)')
+        % xline('0')
+
+    end
+end % end live conditional
+
 end % end function

@@ -11,7 +11,7 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     death_pressure chill dim2directionality displacement live polarhist dim1directionality...
     Discrete Sine dim1displacement rand_division speed_decay dim1noise dim2noise etaX etaY ...                                                                                        %#ok<GVMIS>
     disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise displacement3by2 ...                                                                                               %#ok<GVMIS>
-    densityplotDIR densityplotDISP densityDirTime tau E0
+    densityplotDIR densityplotDISP densityDirTime tau E0 MeanSquareDisplacement
 
 %% Types of plots
 live = 0;                               % Enables Live Visualization
@@ -26,9 +26,10 @@ displacement3by2 = 0;                   % enables displacement of all fields in 
 densityplotDIR = 0;                     % enables density plot for directionality
 densityplotDISP = 0;                    % enables density plot for displacement
 densityDirTime = 0;                     % enables directionality over time plot for density
+MeanSquareDisplacement = 0;             % enables MSD vs time
 
 % Number of runs to be averaged across
-runs = 15;                               
+runs = 5;                               
 
 % begin start timer
 tStart = tic;
@@ -56,7 +57,7 @@ Directrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6
 
 fields = [0, 30, 50, 75,  100, 200];
 densityfields = [15, 30, 50, 75, 100, 200];
-density = 1;        % signals that a varying number of cells is intended
+density = 0;        % signals that a varying number of cells is intended
 % *default is 50 cells 
 
 %% Preallocation
@@ -120,7 +121,7 @@ for z = 1:6
         rand_division = 0;                      % Enables field-directed mitosis
         Discrete = 0;                           % Enables Discrete field change
 
-        ExMax = fields(z) / 80;               % x field max
+        ExMax = fields(z) / 1000;                 % x field max
         EyMax = 0;                              % y field max
         absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
 
@@ -365,9 +366,7 @@ for z = 1:6
                 cell_posData(p).direct6 = cos(atan2(y_tmp, x_tmp));
         end
 
-
     end
-    dispAvg(z,1) = mean(displacement_run);
     directedness(z,1) = (dispruntheta);
 end
 
@@ -379,6 +378,10 @@ end
 
 for i = 1:iterate
     tmp1 = zeros(runs, 1);
+    tmpSD1 = zeros(runs, 1);
+    tmp_dispspeed = zeros(runs, 1);
+    tmp_dispspeedSD = zeros(runs, 1);
+
     for j = 1:runs
         cell_posData(j).posxmean = mean(cell_posData(j).(posxrun_str(i)),2);
         cell_posData(j).posxSD = std(cell_posData(j).(posxrun_str(i)),0,2);
@@ -386,11 +389,24 @@ for i = 1:iterate
         cell_posData(j).posymean = mean(cell_posData(j).(posyrun_str(i)),2);
         cell_posData(j).posySD = std(cell_posData(j).(posyrun_str(i)),0,2);
 
-        tmp0 = mean(cell_posData(j).(Directrun_str(i)));
-        tmp1(j,1) = mean(tmp0,2);
+        % displacement quantities temp
+        tmp_vecmag = mean(sqrt((cell_posData(j).(posxrun_str(i))).^2 + (cell_posData(j).(posyrun_str(i))).^2 ),2);
+        tmp_vecmagSD = std(sqrt((cell_posData(j).(posxrun_str(i))).^2 + (cell_posData(j).(posyrun_str(i))).^2 ),1,2);
+        tmp_dispspeed(j,1) = tmp_vecmag(runTime) / runTime;
+        tmp_dispspeedSD(j,1) = tmp_vecmagSD(runTime) / runTime;
+
+        % directionality quantities temp
+        tmp0 = mean(cell_posData(j).(Directrun_str(i)),2);
+        tmpSD0 = std(cell_posData(j).(Directrun_str(i)),1,2);
+        tmp1(j,1) = tmp0(runTime);
+        tmpSD1(j,1) = tmpSD0(runTime);
     end
+
     cell_posData(i).directionality_mean = mean(tmp1);
-    cell_posData(i).directionalitySD = std(tmp1, 0) / sqrt(runs);
+    cell_posData(i).directionalitySD = std(tmpSD1);
+
+    cell_posData(i).displacement_mean = mean(tmp_dispspeed);
+    cell_posData(i).displacementSD = std(tmp_dispspeedSD);
     
 end
 
