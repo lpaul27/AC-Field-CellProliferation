@@ -79,7 +79,7 @@ for z = 1:6
     for p = 1:runs
         % Begin Simulation timer
         %% Domain Parameters
-        runTime = 120;                           % total runTime of simulation
+        runTime = 500;                           % total runTime of simulation
         dt = 1;                                  % time step
         NumCells = 50;
         if(density)
@@ -97,7 +97,7 @@ for z = 1:6
 
         %% Cell Parameters
         critRad = 12;                            % critical radius for mitosis
-        Ccyclet = 400;                      % benchmark cell cycle time
+        Ccyclet = 100000;                      % benchmark cell cycle time
         death_rate = 1e-200;                     % Cell death rate
         death_pressure = 1000;                   % Pressure required for apoptosis
         critical_pressure = 0.05;                % Critical presssure for dormancy

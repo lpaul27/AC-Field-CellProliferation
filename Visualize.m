@@ -209,8 +209,8 @@ if(~live)
         % Example data
 
         for i = 1:length(groups)
-            data_sim(i,1) = cell_posData(i).directionality_mean;
-            err_sim(i,1) = cell_posData(i).directionalitySD;
+            data_sim(i,1) = cell_posData(i).displacement_mean;
+            err_sim(i,1) = cell_posData(i).displacementSD;
         end
 
         data_exp = [-0.05; -0.4; -0.5; -0.6; -0.8; -0.9];
@@ -318,7 +318,7 @@ if(~live)
         yticks([-1.0, -0.8, -0.6,-0.4, -0.2, 0])
         ylim([-1.0 0]);
 
-        %legend({'Simulation', 'Experiment'}, 'Location', 'northwest');
+        legend({'Simulation', 'Experiment'}, 'Location', 'southwest');
         box on;
         set(gca,'fontsize',18);
         set(gcf, 'Color', 'white')
@@ -595,15 +595,17 @@ if(~live)
         %MSD_SD = size(MSD);
         for i = 1:length(fields)
             for j = 1:runs
-                tmp_sqd = cell_posData(j).posxr1.^2 + cell_posData(j).posyr1.^2;
+                tmp_sqd = cell_posData(j).(posxrun_str(i)).^2 + cell_posData(j).(posyrun_str(i)).^2;
 
                 square_D(:, j) = mean(tmp_sqd,2);
             end
             MSD(:, i) = mean(square_D,2);
             %MSD_SD(:,i) = std(square_D);
+            scatter((1:runTime), MSD(:, i));
+            hold on;
+
         end
 
-        scatter((1:runTime), MSD)
         xlabel('Time (Steps)')
         ylabel('Mean Square Displacement (\mu m^2)')
         % xline('0')

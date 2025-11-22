@@ -5,7 +5,7 @@ function [xf, yf, vxf, vyf, cell_lifetime, tmp_time] = Step_Update(x0, y0, vx0, 
 % Outputs: x(t+1), y(t+1) // vx(t+1), vy(t+1) // radius(t+1)
 
 % Declaration of Globals
-global NumCells dt eta vels_med critRad runTime speed_decay dim2noise dim1noise etaX etaY velocity_noise ...
+global NumCells dt eta vels_med critRad speed_decay dim2noise dim1noise etaX etaY velocity_noise ...
     sigmax sigmay velocity_mag_noise                                        %#ok<GVMIS>
 
 %% Preallocation of updated values
@@ -59,12 +59,13 @@ for i = 1:NumCells
         vxf(i, 1) = (vxNat(i,1) + Fx(i,1))* dt;     % x component
         vyf(i, 1) = (vyNat(i,1) + Fy(i,1))* dt;     % y component
 
-        if(Cradius(i,1) > 0.9 * critRad)        % decreasing velocity as cell approaches mitosis
-            tmp_time(i,1) = tmp_time(i,1) + 1;
-            pow = -(tmp_time(i,1) / (speed_decay));
-            vxf(i,1) = vxf(i,1) * exp(pow);
-            vyf(i,1) = vyf(i,1) * exp(pow);
-        end
+        %% Commented during meeting 11-21 for MSD
+%         if(Cradius(i,1) > 0.9 * critRad)        % decreasing velocity as cell approaches mitosis
+%             tmp_time(i,1) = tmp_time(i,1) + 1;
+%             pow = -(tmp_time(i,1) / (speed_decay));
+%             vxf(i,1) = vxf(i,1) * exp(pow);
+%             vyf(i,1) = vyf(i,1) * exp(pow);
+%         end
     end % end live cell condition
 end % end all cells loop
 end % end function
