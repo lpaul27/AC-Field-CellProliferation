@@ -11,7 +11,7 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     death_pressure chill dim2directionality displacement live polarhist dim1directionality...
     Discrete Sine dim1displacement rand_division speed_decay dim1noise dim2noise etaX etaY ...                                                                                        %#ok<GVMIS>
     disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise displacement3by2 ...                                                                                               %#ok<GVMIS>
-    densityplotDIR densityplotDISP densityDirTime tau E0 MeanSquareDisplacement
+    densityplotDIR densityplotDISP densityDirTime tau E0 MeanSquareDisplacement Ra
 
 %% Types of plots
 live = 0;                               % Enables Live Visualization
@@ -68,6 +68,7 @@ cell_densitydata = struct();
 if(density)
     runs = runs * 2;
 end
+
 % Set to a higher value if multiple field intended
 for z = 1:6
     % Preallocation for data storage
@@ -79,7 +80,7 @@ for z = 1:6
     for p = 1:runs
         % Begin Simulation timer
         %% Domain Parameters
-        runTime = 500;                           % total runTime of simulation
+        runTime = 1050;                           % total runTime of simulation
         dt = 1;                                  % time step
         NumCells = 50;
         if(density)
@@ -90,14 +91,14 @@ for z = 1:6
                 NumCells = 210;
             end
         end
-        vels_med = 0.7;                        % initial velocity param center point
+        vels_med = 0.7;  %! 0.7                      % initial velocity param center point
         lbox = 1050;                             % size of the box particles are confined to
         R_boundary = 150; %lbox/6;                     % Sample domain size for cells to begin
         chill = 15;                              % chill time to suppress cell death
 
         %% Cell Parameters
         critRad = 12;                            % critical radius for mitosis
-        Ccyclet = 100000;                      % benchmark cell cycle time
+        Ccyclet = 100000;                        % benchmark cell cycle time
         death_rate = 1e-200;                     % Cell death rate
         death_pressure = 1000;                   % Pressure required for apoptosis
         critical_pressure = 0.05;                % Critical presssure for dormancy
@@ -108,20 +109,21 @@ for z = 1:6
         %% Cell-cell parameters
         k = 0.1;                               % constant in force repulsion calculation (~elasticity)
         daughter_noise = 0.1;                   % noise strength in mitosis separation
-        nu = 0.6;                                 % friction factor
-        mu = 1;                                 % electrical mobility
+        nu = 0.7;                                 % friction factor
+        mu = .0003;              % 0.01                   % electrical mobility
         neighborWeight = 1;                  % group movement weighting
         c_rec = 0.9;                            % mean receptor concentration (normalized)
         c_lig = 0.9;                            % mean ligand concentration (normalized)
         adh = 0;                                % adhesive coefficient
-
+        Ra = 0;
         %% Cell-Field parameters
         % Discrete Parameters
         Field = 1;                              % Signals to time varying fields that field is on if 1
         rand_division = 0;                      % Enables field-directed mitosis
-        Discrete = 0;                           % Enables Discrete field change
-
-        ExMax = fields(z) / 1000;                 % x field max
+        Discrete = 0;                           % Enables directionally Discrete field change
+        
+        %!! tweaking param
+        ExMax = fields(z);                      % x field max
         EyMax = 0;                              % y field max
         absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
 
@@ -134,7 +136,9 @@ for z = 1:6
 
         %% Simulation type parameters
         dim1noise = 1;                          % signals type of noise (1D)
-        eta = 0.15;
+
+        % !! tweaking param
+        eta = 0.15;   % ! 0.15                          % noise
         dim2noise = 0;                          % signals type of noise (2D)
             etaX = eta / 2;                     % X component of noise strength
             etaY = 3*eta;                       % Y component of noise strength

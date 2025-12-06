@@ -9,7 +9,7 @@
 function [Fx, Fy, neibAngAvg, Pressure] = Interaction_Forces(x, y, Cradius, vel_ang, exempt)
 
 % Constants in function
-global k NumCells adh neighborWeight %#ok<GVMIS>
+global k NumCells adh neighborWeight Ra %#ok<GVMIS>
 
 %% Raw Computations
 % Define meshgrid to quantify overlap, radius, death
@@ -94,7 +94,7 @@ Pressure = (sum(Pressure))';
 
 [angleGrid] = meshgrid(vel_ang);
 % dynamic allignment radius vector
-alignment_radius = 2 * Cradius;
+alignment_radius = Ra * Cradius;
 
 % Sort by grid
 index_grid = (dist_btw_cell <= alignment_radius & dist_btw_cell > 0);
