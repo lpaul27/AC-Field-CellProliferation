@@ -259,7 +259,7 @@ if(~live)
         % Label settings
         set(gca, 'XTickLabel', electric_fields, 'XTickLabel', groups, 'XTickLabelRotation', 45);
         ylabel('Displacement speed (\mum/min)');
-        ylim([0 3]);
+        ylim([0.4 0.7]);
 
         legend({'Simulation', 'Experiment'}, 'Location', 'northwest');
         box on;

@@ -29,7 +29,7 @@ densityDirTime = 0;                     % enables directionality over time plot 
 MeanSquareDisplacement = 0;             % enables MSD vs time
 
 % Number of runs to be averaged across
-runs = 5;                               
+runs = 10;                               
 
 % begin start timer
 tStart = tic;
@@ -69,6 +69,11 @@ if(density)
     runs = runs * 2;
 end
 
+%% for testing dt values:
+dt_diff_disp = zeros(10, 1);
+dt_diff_dir = zeros(10,1);
+for a = 1:1
+%% end 
 % Set to a higher value if multiple field intended
 for z = 1:6
     % Preallocation for data storage
@@ -80,7 +85,7 @@ for z = 1:6
     for p = 1:runs
         % Begin Simulation timer
         %% Domain Parameters
-        runTime = 1050;                           % total runTime of simulation
+        runTime = 150;                           % total runTime of simulation
         dt = 1;                                  % time step
         NumCells = 50;
         if(density)
@@ -92,7 +97,7 @@ for z = 1:6
             end
         end
         vels_med = 0.7;  %! 0.7                      % initial velocity param center point
-        lbox = 1050;                             % size of the box particles are confined to
+        lbox = 1550;                             % size of the box particles are confined to
         R_boundary = 150; %lbox/6;                     % Sample domain size for cells to begin
         chill = 15;                              % chill time to suppress cell death
 
@@ -138,7 +143,7 @@ for z = 1:6
         dim1noise = 1;                          % signals type of noise (1D)
 
         % !! tweaking param
-        eta = 0.15;   % ! 0.15                          % noise
+        eta = 0.15;                             % noise
         dim2noise = 0;                          % signals type of noise (2D)
             etaX = eta / 2;                     % X component of noise strength
             etaY = 3*eta;                       % Y component of noise strength
@@ -200,7 +205,7 @@ for z = 1:6
         [x, y, vx, vy, Cradius, vel_ang, polarity] = Initialize();
 
         %% Simulation loop
-        for time = 1:runTime
+        for time = 1:runTime 
             % Time loop
             if(exempt == zeros(size(exempt)))
                 % if all cells die, end simulation
@@ -414,6 +419,10 @@ for i = 1:iterate
     
 end
 
+dt_diff_dir(a, 1) = abs(cell_posData(6).directionality_mean) - abs(cell_posData(1).directionality_mean);
+dt_diff_disp(a,1) = cell_posData(6).displacement_mean - cell_posData(1).displacement_mean;
+%% end dt test loop
+end
 Visualize(x_time,y_time, theta_time, time_control, dispAvg, directedness, fields, cell_posData);
 
 % end timer of full sequence
