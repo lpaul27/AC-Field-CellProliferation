@@ -29,7 +29,7 @@ densityDirTime = 0;                     % enables directionality over time plot 
 MeanSquareDisplacement = 0;             % enables MSD vs time
 
 % Number of runs to be averaged across
-runs = 10;                               
+runs = 100;                               
 
 % begin start timer
 tStart = tic;
@@ -85,7 +85,7 @@ for z = 1:6
     for p = 1:runs
         % Begin Simulation timer
         %% Domain Parameters
-        runTime = 150;                           % total runTime of simulation
+        runTime = 120;                           % total runTime of simulation
         dt = 1;                                  % time step
         NumCells = 50;
         if(density)
@@ -103,7 +103,7 @@ for z = 1:6
 
         %% Cell Parameters
         critRad = 12;                            % critical radius for mitosis
-        Ccyclet = 100000;                        % benchmark cell cycle time
+        Ccyclet = 1000;                        % benchmark cell cycle time
         death_rate = 1e-200;                     % Cell death rate
         death_pressure = 1000;                   % Pressure required for apoptosis
         critical_pressure = 0.05;                % Critical presssure for dormancy
@@ -115,12 +115,12 @@ for z = 1:6
         k = 0.1;                               % constant in force repulsion calculation (~elasticity)
         daughter_noise = 0.1;                   % noise strength in mitosis separation
         nu = 0.7;                                 % friction factor
-        mu = .0003;              % 0.01                   % electrical mobility
-        neighborWeight = 1;                  % group movement weighting
+        mu = .00065;              % 0.01         % electrical mobility
+        neighborWeight = 1;                     % group movement weighting
         c_rec = 0.9;                            % mean receptor concentration (normalized)
         c_lig = 0.9;                            % mean ligand concentration (normalized)
         adh = 0;                                % adhesive coefficient
-        Ra = 0;
+        Ra = 1;
         %% Cell-Field parameters
         % Discrete Parameters
         Field = 1;                              % Signals to time varying fields that field is on if 1
