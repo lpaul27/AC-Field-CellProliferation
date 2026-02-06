@@ -100,8 +100,12 @@ alignment_radius = Ra * Cradius;
 index_grid = (dist_btw_cell <= alignment_radius & dist_btw_cell > 0);
 
 % weight all cell ij interactions (i=j unweighted)
-index_grid = index_grid * (neighborWeight/ (1+neighborWeight)) + eye(size(index_grid));
 
+%% neighborweight testing
+    % index_grid = index_grid * (neighborWeight/ (1+neighborWeight)) + eye(size(index_grid));
+
+%% standard model
+index_grid = index_grid + eye(size(index_grid));
 % convert to cartesian to find average
 angleGridX = cos(angleGrid);
 angleGridY = sin(angleGrid);

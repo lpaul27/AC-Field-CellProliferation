@@ -29,7 +29,7 @@ densityDirTime = 0;                     % enables directionality over time plot 
 MeanSquareDisplacement = 0;             % enables MSD vs time
 
 % Number of runs to be averaged across
-runs = 100;                               
+runs = 5;                               
 
 % begin start timer
 tStart = tic;
@@ -97,13 +97,13 @@ for z = 1:6
             end
         end
         vels_med = 0.7;  %! 0.7                      % initial velocity param center point
-        lbox = 1550;                             % size of the box particles are confined to
-        R_boundary = 150; %lbox/6;                     % Sample domain size for cells to begin
+        lbox = 2050;  %1550                           % size of the box particles are confined to
+        R_boundary = lbox/6; %lbox/6;                     % Sample domain size for cells to begin
         chill = 15;                              % chill time to suppress cell death
 
         %% Cell Parameters
         critRad = 12;                            % critical radius for mitosis
-        Ccyclet = 1000;                        % benchmark cell cycle time
+        Ccyclet = 1300;                        % benchmark cell cycle time
         death_rate = 1e-200;                     % Cell death rate
         death_pressure = 1000;                   % Pressure required for apoptosis
         critical_pressure = 0.05;                % Critical presssure for dormancy
@@ -112,15 +112,15 @@ for z = 1:6
         speed_decay = 100;                       % speed decay rate for mitosis
 
         %% Cell-cell parameters
-        k = 0.1;                               % constant in force repulsion calculation (~elasticity)
+        k = 0.01;        %0.1                       % constant in force repulsion calculation (~elasticity)
         daughter_noise = 0.1;                   % noise strength in mitosis separation
         nu = 0.7;                                 % friction factor
-        mu = .00065;              % 0.01         % electrical mobility
+        mu = 0.00035;    % 0.01, 0.00065         % electrical mobility
         neighborWeight = 1;                     % group movement weighting
         c_rec = 0.9;                            % mean receptor concentration (normalized)
         c_lig = 0.9;                            % mean ligand concentration (normalized)
         adh = 0;                                % adhesive coefficient
-        Ra = 1;
+        Ra = 0;
         %% Cell-Field parameters
         % Discrete Parameters
         Field = 1;                              % Signals to time varying fields that field is on if 1
@@ -216,9 +216,12 @@ for z = 1:6
                 growth_rate(j, 1) = (pi * randgaussrad(critRad, (critRad / 2)).^2) / (2* Ccyclet);
             end
             % Reinitializes electric field
-            if(time || Field)
+%             if(time || Field)
+%                 [u, v, X, Y, Ex_strength, Ey_strength] = EF_Grid_Init(time);
+%             end
+
+          
                 [u, v, X, Y, Ex_strength, Ey_strength] = EF_Grid_Init(time);
-            end
             % Store plotting data
 
             % Displacement data
@@ -337,42 +340,42 @@ for z = 1:6
                 cell_posData(p).theta1 = theta_time;
                 y_tmp = cell_posData(p).posyr1;
                 x_tmp = cell_posData(p).posxr1;
-                cell_posData(p).direct1 = cos(atan2(y_tmp, x_tmp));
+                cell_posData(p).direct1 = cos(theta_time);
             case 2
                 cell_posData(p).posxr2 = x_time - x_time(1,:);
                 cell_posData(p).posyr2 = y_time - y_time(1,:);
                 cell_posData(p).theta2 = theta_time;
                 y_tmp = cell_posData(p).posyr2;
                 x_tmp = cell_posData(p).posxr2;
-                cell_posData(p).direct2 = cos(atan2(y_tmp, x_tmp));
+                cell_posData(p).direct2 = cos(theta_time);
             case 3
                 cell_posData(p).posxr3 = x_time - x_time(1,:);
                 cell_posData(p).posyr3 = y_time - y_time(1,:);
                 cell_posData(p).theta3 = theta_time;
                 y_tmp = cell_posData(p).posyr3;
                 x_tmp = cell_posData(p).posxr3;
-                cell_posData(p).direct3 = cos(atan2(y_tmp, x_tmp));
+                cell_posData(p).direct3 = cos(theta_time);
             case 4
                 cell_posData(p).posxr4 = x_time - x_time(1,:);
                 cell_posData(p).posyr4 = y_time - y_time(1,:);
                 cell_posData(p).theta4 = theta_time;
                 y_tmp = cell_posData(p).posyr4;
                 x_tmp = cell_posData(p).posxr4;
-                cell_posData(p).direct4 = cos(atan2(y_tmp, x_tmp));
+                cell_posData(p).direct4 = cos(theta_time);
             case 5
                 cell_posData(p).posxr5 = x_time - x_time(1,:);
                 cell_posData(p).posyr5 = y_time - y_time(1,:);
                 cell_posData(p).theta5 = theta_time;
                 y_tmp = cell_posData(p).posyr5;
                 x_tmp = cell_posData(p).posxr5;
-                cell_posData(p).direct5 = cos(atan2(y_tmp, x_tmp));
+                cell_posData(p).direct5 = cos(theta_time);
             case 6
                 cell_posData(p).posxr6 = x_time - x_time(1,:);
                 cell_posData(p).posyr6 = y_time - y_time(1,:);
                 cell_posData(p).theta6 = theta_time;
                 y_tmp = cell_posData(p).posyr6;
                 x_tmp = cell_posData(p).posxr6;
-                cell_posData(p).direct6 = cos(atan2(y_tmp, x_tmp));
+                cell_posData(p).direct6 = cos(theta_time);
         end
 
     end
