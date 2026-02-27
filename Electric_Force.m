@@ -24,7 +24,7 @@ for i = 1:NumCells
     EF_y(i) = -sum(v(coord_sub)) ./ length(v(coord_sub));
 end
 % calculate "electric field pressure"
-Epressure = sqrt(EF_x.^2 + EF_y.^2) ./ (pi*Cradius);
+Epressure = sqrt(EF_x.^2 + EF_y.^2) ./ (2*pi*Cradius);
 
 end
 

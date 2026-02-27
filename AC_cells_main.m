@@ -103,24 +103,24 @@ for z = 1:6
 
         %% Cell Parameters
         critRad = 12;                            % critical radius for mitosis
-        Ccyclet = 1300;                        % benchmark cell cycle time
+        Ccyclet = 450;    % 1300                    % benchmark cell cycle time
         death_rate = 1e-200;                     % Cell death rate
         death_pressure = 1000;                   % Pressure required for apoptosis
         critical_pressure = 0.05;                % Critical presssure for dormancy
         Cell_radius = 10;                        % fixed cell radius
-        Cell_std = 0.08;                         % Standard Deviation of cell radii
+        Cell_std = 0.8;   % 0.08                      % Standard Deviation of cell radii
         speed_decay = 100;                       % speed decay rate for mitosis
 
         %% Cell-cell parameters
         k = 0.01;        %0.1                       % constant in force repulsion calculation (~elasticity)
         daughter_noise = 0.1;                   % noise strength in mitosis separation
         nu = 0.7;                                 % friction factor
-        mu = 0.00035;    % 0.01, 0.00065         % electrical mobility
+        mu = 0.00035;%0.00035;    % 0.01, 0.00065         % electrical mobility
         neighborWeight = 1;                     % group movement weighting
         c_rec = 0.9;                            % mean receptor concentration (normalized)
         c_lig = 0.9;                            % mean ligand concentration (normalized)
         adh = 0;                                % adhesive coefficient
-        Ra = 0;
+        Ra = 1;
         %% Cell-Field parameters
         % Discrete Parameters
         Field = 1;                              % Signals to time varying fields that field is on if 1
@@ -275,7 +275,8 @@ for z = 1:6
             Fy_net = nu*(Fy + mu*EF_y) .* exempt;
 
             % Calculate the net pressure
-            Pressure = Epressure + Cpressure;
+            Pressure = 0*Epressure + Cpressure;
+            % Pressure is currently set to be indepenant of the EF.
 
             % Step update function
             [x, y, vx, vy, cell_lifetime, tmp_time] = Step_Update(x, y, vx, vy, Fx_net, Fy_net, neibAngAvg, exempt, cell_lifetime, Cradius, growth_rate, tmp_time);
