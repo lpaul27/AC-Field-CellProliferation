@@ -96,26 +96,27 @@ for z = 1:6
                 NumCells = 210;
             end
         end
-        vels_med = 0.7;  %! 0.7                      % initial velocity param center point
+        vels_med = 1.2;  %! 0.7                      % initial velocity param center point
         lbox = 2050;  %1550                           % size of the box particles are confined to
         R_boundary = lbox/6; %lbox/6;                     % Sample domain size for cells to begin
         chill = 15;                              % chill time to suppress cell death
 
         %% Cell Parameters
         critRad = 12;                            % critical radius for mitosis
-        Ccyclet = 450;    % 1300                    % benchmark cell cycle time
+        Ccyclet = 2E20;%450;    % 1300                    % benchmark cell cycle time
         death_rate = 1e-200;                     % Cell death rate
         death_pressure = 1000;                   % Pressure required for apoptosis
         critical_pressure = 0.05;                % Critical presssure for dormancy
-        Cell_radius = 10;                        % fixed cell radius
-        Cell_std = 0.8;   % 0.08                      % Standard Deviation of cell radii
+        Cell_radius = 10;%10;                        % fixed cell radius
+        Cell_std = 0;%0.8;   % 0.08                      % Standard Deviation of cell radii
         speed_decay = 100;                       % speed decay rate for mitosis
+        alpha = 3e-3;                               % EF tweaking param
 
         %% Cell-cell parameters
-        k = 0.01;        %0.1                       % constant in force repulsion calculation (~elasticity)
+        k = 1;%0.01;        %0.1                       % constant in force repulsion calculation (~elasticity)
         daughter_noise = 0.1;                   % noise strength in mitosis separation
         nu = 0.7;                                 % friction factor
-        mu = 0.00035;%0.00035;    % 0.01, 0.00065         % electrical mobility
+        mu = 1;  %0.00035;    % 0.01, 0.00065         % electrical mobility
         neighborWeight = 1;                     % group movement weighting
         c_rec = 0.9;                            % mean receptor concentration (normalized)
         c_lig = 0.9;                            % mean ligand concentration (normalized)
@@ -128,7 +129,7 @@ for z = 1:6
         Discrete = 0;                           % Enables directionally Discrete field change
         
         %!! tweaking param
-        ExMax = fields(z);                      % x field max
+        ExMax = alpha* fields(z);                      % x field max
         EyMax = 0;                              % y field max
         absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
 
@@ -143,7 +144,7 @@ for z = 1:6
         dim1noise = 1;                          % signals type of noise (1D)
 
         % !! tweaking param
-        eta = 0.15;                             % noise
+        eta = 0.4;       %0.15                      % noise
         dim2noise = 0;                          % signals type of noise (2D)
             etaX = eta / 2;                     % X component of noise strength
             etaY = 3*eta;                       % Y component of noise strength
