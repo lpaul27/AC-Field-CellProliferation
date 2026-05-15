@@ -96,14 +96,14 @@ for z = 1:6
                 NumCells = 210;
             end
         end
-        vels_med = 1.2;  %! 0.7                      % initial velocity param center point
-        lbox = 2050;  %1550                           % size of the box particles are confined to
+        vels_med = 1.5;  %! 1.2                    % initial velocity param center point
+        lbox = 2050;  %2050                           % size of the box particles are confined to
         R_boundary = lbox/6; %lbox/6;                     % Sample domain size for cells to begin
         chill = 15;                              % chill time to suppress cell death
 
         %% Cell Parameters
         critRad = 12;                            % critical radius for mitosis
-        Ccyclet = 2E20;%450;    % 1300                    % benchmark cell cycle time
+        Ccyclet = 270;                           % benchmark cell cycle time; CNCC: we expect 5-10 mitosis (=270)
         death_rate = 1e-200;                     % Cell death rate
         death_pressure = 1000;                   % Pressure required for apoptosis
         critical_pressure = 0.05;                % Critical presssure for dormancy
@@ -144,7 +144,7 @@ for z = 1:6
         dim1noise = 1;                          % signals type of noise (1D)
 
         % !! tweaking param
-        eta = 0.4;       %0.15                      % noise
+        eta = 0.45;       %0.45                      % noise
         dim2noise = 0;                          % signals type of noise (2D)
             etaX = eta / 2;                     % X component of noise strength
             etaY = 3*eta;                       % Y component of noise strength
