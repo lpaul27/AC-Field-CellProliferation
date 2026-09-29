@@ -11,7 +11,7 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     death_pressure chill dim2directionality displacement live polarhist dim1directionality...
     Discrete Sine dim1displacement rand_division speed_decay dim1noise dim2noise etaX etaY ...                                                                                        %#ok<GVMIS>
     disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise displacement3by2 ...                                                                                               %#ok<GVMIS>
-    densityplotDIR densityplotDISP densityDirTime tau E0 MeanSquareDisplacement Ra
+    densityplotDIR densityplotDISP densityDirTime tau E0 MeanSquareDisplacement Ra runs
 
 %% Types of plots
 live = 0;                               % Enables Live Visualization
@@ -57,7 +57,7 @@ Directrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6
 
 fields = [0, 30, 50, 75,  100, 200];
 densityfields = [15, 30, 50, 75, 100, 200];
-density = 0;        % signals that a varying number of cells is intended
+density = 1;        % signals that a varying number of cells is intended
 % *default is 50 cells 
 
 %% Preallocation
@@ -121,7 +121,7 @@ for z = 1:6
         c_rec = 0.9;                            % mean receptor concentration (normalized)
         c_lig = 0.9;                            % mean ligand concentration (normalized)
         adh = 0;                                % adhesive coefficient
-        Ra = 1;
+        Ra = 1;                                 % Radius of alignemnt
         %% Cell-Field parameters
         % Discrete Parameters
         Field = 1;                              % Signals to time varying fields that field is on if 1

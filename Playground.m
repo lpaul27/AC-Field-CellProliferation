@@ -1,70 +1,80 @@
-figure;
-tiledlayout(1,2);
+% compares directionality of different densities
+groups = {'15 mV/mm', '30 mV/mm', '50 mV/mm', '75 mV/mm', '100 mV/mm', '200 mV/mm'};
+dircrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6"];
+posxrun_str = ["posxr1", "posxr2", "posxr3", "posxr4", "posxr5", "posxr6"];
+posyrun_str = ["posyr1", "posyr2", "posyr3", "posyr4", "posyr5", "posyr6"];
+% Create grouped bar chart
 
-%plotting
-posxrun_str = ["posxr1", "posxr6"];
-posyrun_str = ["posyr1", "posyr6"];
-fields = [0, 200];
-trajectory_string = ["EF0", "EF30", "EF50", "EF75", "EF100", "EF200"];
+cell_vector_lowDensity = struct('xcomponent', 'ycomponent');
+cell_vector_highDensity = struct('xcomponent', 'ycomponent');
 
-t = (linspace(0, 1, runTime))';
-cmap = zeros(runTime-1, 3);
-for i=1:2
-    nexttile
-
-    % inner product with data to plot red
-    Trajectory_data_tmp_x=cell_posData(1).(posxrun_str(i));
-    Trajectory_data_tmp_y = cell_posData(1).(posyrun_str(i));
+Phi_rho = zeros(6,10);
+Phi_rho_low = zeros(6,5);
+Phi_rho_high = zeros(6,5);
+Phi_rho_SD = zeros(6,10);
 
 
-    for j = 1:(runTime-1)
-        for k = 1:10
-            R = 0.3 + 0.5*t(j);
-            G = 0.7 * t(j);
-            B = 0.5 - 0.3* t(j);
-            cmap(j, :) = [R G B];
+for i = 1:6
+    for j = 1:10
+        tmpx = cell_posData(j).(posxrun_str(i))(120, :);
+        tmpy = cell_posData(j).(posyrun_str(i))(120, :);
 
-            plot([Trajectory_data_tmp_x(j, k) Trajectory_data_tmp_x(j+1, k)], [Trajectory_data_tmp_y(j, k)  Trajectory_data_tmp_y(j+1, k)], 'Color', [R G B], 'LineWidth', 2.0)
-            hold on;
+        tmpatan2 = atan2(tmpy, tmpx);
+        tmp_Phi = cos(tmpatan2);
+
+        tmp_avgPhi = mean(tmp_Phi);
+
+        Phi_rho(i,j) = tmp_avgPhi;
+        Phi_rho_SD(i,j) = std(tmp_Phi);
+        
+        if(mod(j, 2))
+            Phi_rho_high(i,round(j/2)) = Phi_rho(i,j);
         end
-    end 
-
-    hold on;
-    xline(0, '-');
-    yline(0, '-');
-    if(i == (1))
-        xlabel('x-position (\mum)')
+        if(~mod(j,2))
+            Phi_rho_low(i,round(j/2)) = Phi_rho(i,j);
+        end
     end
-    if(i == (2))
-        xlabel('x-position (\mum)')
-
-        colormap(cmap);
-        clim([0 3])
-        cb = colorbar;
-        cb.Label.String = 'Time (hours)';
-        cb.Ticks = [0 1 2 3];
-    end
-    if(i == (1))
-        ylabel('y-position (\mum)')
-    end
-
-
-
-print1 = title(sprintf('%.0f V/m', (fields(i))));
-
-% Set the box and background properties
-set(print1, 'Units', 'normalized', ...
-            'Position', [0.9, 0.95, 0], ...
-            'EdgeColor', 'black', ...      % Adds the box border
-            'BackgroundColor', 'white', ... % Fills the box so plot lines don't cross text
-            'LineWidth', 1, ...           % Thickness of the box border
-            'Margin', 2);                 % Padding between text and the box border
-
-    xlim([-250, 150]);
-    ylim([-150, 150]);
-
-    set(gca,'fontsize', 15);
-    set(gcf, 'Color', 'white')
 end
-fields = [0, 30, 50, 75,  100, 200];
+disp(tmpx)
+Phi_lowDensity = mean(Phi_rho_low, 2);
+Phi_lowDensity_SD = std(Phi_rho_low,0, 2);
 
+Phi_highDensity = mean(Phi_rho_high, 2);
+Phi_highDensity_SD = std(Phi_rho_high,0, 2);
+
+data = [Phi_highDensity, Phi_lowDensity];
+
+figure;
+
+b = bar(data);
+xBar = zeros(6,2);
+err = zeros(6,2);
+hold on
+for i = 1:2
+    xBar(:, i) = b(i).XEndPoints;
+end
+
+for i =1:length(groups)
+    for j = 1:2
+        er = errorbar(xBar(i,j),data(i,j), err(i,j), 'o');
+        er.Color = [0 0 0];
+        hold on
+    end
+end
+hold on
+
+% Set colors (optional)
+b(1).FaceColor = [0.5 0.5 0.5];     % blue
+b(2).FaceColor = [1 0.4 0];         % orange
+
+% Label settings
+set(gca, 'XTickLabel', groups, 'XTickLabelRotation', 45, 'FontSize', 18, 'FontWeight', 'bold');
+
+ylabel('Directionality \Phi_x', 'FontSize',18);
+yticks([-1.0, -0.8, -0.6,-0.4, -0.2, 0])
+ylim([-1.0 0]);
+
+legend({'Low Density', 'High Density'}, 'Location', 'southwest');
+box on;
+set(gca,'fontsize',18);
+set(gcf, 'Color', 'white')
