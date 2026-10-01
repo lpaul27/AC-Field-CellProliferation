@@ -74,7 +74,7 @@ ylabel('Directionality \Phi_x', 'FontSize',18);
 yticks([-1.0, -0.8, -0.6,-0.4, -0.2, 0])
 ylim([-1.0 0]);
 
-legend({'Low Density', 'High Density'}, 'Location', 'southwest');
+legend({'High Density', 'Low Density'}, 'Location', 'southwest');
 box on;
 set(gca,'fontsize',18);
 set(gcf, 'Color', 'white')
