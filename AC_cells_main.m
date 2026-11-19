@@ -113,7 +113,7 @@ for z = 1:6
         alpha = 3e-3;                               % EF tweaking param
 
         %% Cell-cell parameters
-        k = 1;%0.01;        %0.1                       % constant in force repulsion calculation (~elasticity)
+        k = 2;%0.01;        %0.1                       % constant in force repulsion calculation (~elasticity)
         daughter_noise = 0.1;                   % noise strength in mitosis separation
         nu = 0.7;                                 % friction factor
         mu = 1;  %0.00035;    % 0.01, 0.00065         % electrical mobility
@@ -121,7 +121,7 @@ for z = 1:6
         c_rec = 0.9;                            % mean receptor concentration (normalized)
         c_lig = 0.9;                            % mean ligand concentration (normalized)
         adh = 0;                                % adhesive coefficient
-        Ra = 1;                                 % Radius of alignemnt
+        Ra = 0.01;                                 % Radius of alignemnt
         %% Cell-Field parameters
         % Discrete Parameters
         Field = 1;                              % Signals to time varying fields that field is on if 1
@@ -130,6 +130,9 @@ for z = 1:6
         
         %!! tweaking param
         ExMax = alpha* fields(z);                      % x field max
+        if(density)
+            ExMax = alpha * densityfields(z);
+        end
         EyMax = 0;                              % y field max
         absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
 
@@ -427,6 +430,7 @@ end
 dt_diff_dir(a, 1) = abs(cell_posData(6).directionality_mean) - abs(cell_posData(1).directionality_mean);
 dt_diff_disp(a,1) = cell_posData(6).displacement_mean - cell_posData(1).displacement_mean;
 %% end dt test loop
+
 end
 Visualize(x_time,y_time, theta_time, time_control, dispAvg, directedness, fields, cell_posData);
 

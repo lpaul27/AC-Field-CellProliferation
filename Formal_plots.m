@@ -262,7 +262,6 @@ for i=1:6
         xlabel('x-position (\mum)')
     end
 
-
     if(i == (1))
         ylabel('y-position (\mum)')
     end
@@ -291,70 +290,6 @@ end
 
 
 exportgraphics(gcf, 'sixPlots.pdf', 'ContentType', 'vector', 'Resolution',1000);
-
-
-%% Density plots
-if(density)
-    % compares directionality of different densities
-    groups = {'15 mV/mm', '30 mV/mm', '50 mV/mm', '75 mV/mm', '100 mV/mm', '200 mV/mm'};
-    dircrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6"];
-    % Create grouped bar chart
-
-    tmp_high = zeros(6, runs/2);
-    tmp_low = zeros(6, runs/2);
-    std_low = zeros(6, runs/2);
-    std_high = zeros(6, runs/2);
-
-    for i = 1:length(groups)
-        for j = 1:runs
-            if(mod(j,2))
-                tmp_high(i, j) = cos(atan2((cell_posData(j).posymean(runTime, 1)), (cell_posData(j).posxmean(runTime, 1))));
-            end
-            if(~mod(j,2))
-                tmp_low(i, j) = cos(atan2((cell_posData(j).posymean(runTime, 1)), (cell_posData(j).posxmean(runTime, 1))));
-            end
-        end
-    end
-
-    data = [low_density', high_density'];
-    err = [LD_err', HD_err'];
-
-    figure;
-
-    b = bar(data);
-    xBar = zeros(6,2);
-
-    hold on
-    for i = 1:2
-        xBar(:, i) = b(i).XEndPoints;
-    end
-
-    for i =1:length(groups)
-        for j = 1:2
-            er = errorbar(xBar(i,j),data(i,j), err(i,j), 'o');
-            er.Color = [0 0 0];
-            hold on
-        end
-    end
-    hold on
-
-    % Set colors (optional)
-    b(1).FaceColor = [0.5 0.5 0.5];     % blue
-    b(2).FaceColor = [1 0.4 0];         % orange
-
-    % Label settings
-    set(gca, 'XTickLabel', groups, 'XTickLabelRotation', 45, 'FontSize', 18, 'FontWeight', 'bold');
-
-    ylabel('Directionality \Phi_x', 'FontSize',18);
-    yticks([-1.0, -0.8, -0.6,-0.4, -0.2, 0])
-    ylim([-1.0 0]);
-
-    legend({'Low Density', 'High Density'}, 'Location', 'southwest');
-    box on;
-    set(gca,'fontsize',18);
-    set(gcf, 'Color', 'white')
-
-end
 
 
 %% single cell trajectory for supp.
@@ -447,4 +382,152 @@ end
 fields = [0, 30, 50, 75,  100, 200];
 exportgraphics(gcf, 'gradient.pdf', 'ContentType', 'vector', 'Resolution',1000);
 
+%% Density plots
 
+groups = {'15 mV/mm', '30 mV/mm', '50 mV/mm', '75 mV/mm', '100 mV/mm', '200 mV/mm'};
+dircrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6"];
+posxrun_str = ["posxr1", "posxr2", "posxr3", "posxr4", "posxr5", "posxr6"];
+posyrun_str = ["posyr1", "posyr2", "posyr3", "posyr4", "posyr5", "posyr6"];
+% Create grouped bar chart
+
+Phi_rho = zeros(6,10);
+Phi_rho_low = zeros(6,5);
+Phi_rho_high = zeros(6,5);
+Phi_rho_SD = zeros(6,10);
+
+
+for i = 1:6
+    for j = 1:10
+        tmpx = cell_posData(j).(posxrun_str(i))(120, :);
+        tmpy = cell_posData(j).(posyrun_str(i))(120, :);
+
+        tmpatan2 = atan2(tmpy, tmpx);
+        tmp_Phi = cos(tmpatan2);
+
+        tmp_avgPhi = mean(tmp_Phi);
+
+        Phi_rho(i,j) = tmp_avgPhi;
+        Phi_rho_SD(i,j) = std(tmp_Phi);
+        
+        if(mod(j, 2))
+            Phi_rho_high(i,round(j/2)) = Phi_rho(i,j);
+        end
+        if(~mod(j,2))
+            Phi_rho_low(i,round(j/2)) = Phi_rho(i,j);
+        end
+    end
+end
+
+Phi_lowDensity = mean(Phi_rho_low, 2);
+Phi_lowDensity_SD = std(Phi_rho_low,0, 2);
+
+Phi_highDensity = mean(Phi_rho_high, 2);
+Phi_highDensity_SD = std(Phi_rho_high,0, 2);
+
+data = [Phi_lowDensity, Phi_highDensity];
+err = [Phi_lowDensity_SD, Phi_highDensity_SD] / sqrt(5);
+figure;
+
+b = bar(data);
+xBar = zeros(6,2);
+
+hold on
+for i = 1:2
+    xBar(:, i) = b(i).XEndPoints;
+end
+
+for i =1:length(groups)
+    for j = 1:2
+        er = errorbar(xBar(i,j),data(i,j), err(i,j), 'o');
+        er.Color = [0 0 0];
+        hold on
+    end
+end
+hold on
+
+% Set colors (optional)
+b(1).FaceColor = [1 1 1];     % blue
+b(2).FaceColor = [0 0 0];         % orange
+
+% Label settings
+set(gca, 'XTickLabel', groups, 'XTickLabelRotation', 45, 'FontSize', 18, 'FontWeight', 'bold');
+
+ylabel('Directionality \Phi_x', 'FontSize',18);
+yticks([-1.0, -0.8, -0.6,-0.4, -0.2, 0]);
+ylim([-1.0 0]);
+
+legend({'Low Density', 'High Density'}, 'Location', 'southwest');
+box on;
+set(gca,'fontsize',18);
+set(gcf, 'Color', 'white')
+
+
+%% Displacement speed
+
+d_rho = zeros(6,10);
+d_rho_low = zeros(6,5);
+d_rho_high = zeros(6,5);
+d_rho_SD = zeros(6,10);
+
+for i = 1:6
+    for j = 1:10
+        tmpx = cell_posData(j).(posxrun_str(i))(120, :);
+        tmpy = cell_posData(j).(posyrun_str(i))(120, :);
+
+        tmp_mag = sqrt(tmpx.^2 + tmpy.^2);
+        tmp_displacementSpeed = tmp_mag ./ runTime;
+        
+        d_rho(i,j) = mean(tmp_displacementSpeed);
+        d_rho_SD(i,j) = std(tmp_displacementSpeed);
+        
+        if(mod(j, 2))
+            d_rho_high(i,round(j/2)) = d_rho(i,j);
+        end
+        if(~mod(j,2))
+            d_rho_low(i,round(j/2)) = d_rho(i,j);
+        end
+    end
+end
+
+d_lowDensity = mean(d_rho_low, 2);
+d_lowDensity_SD = std(d_rho_low,0, 2);
+
+d_highDensity = mean(d_rho_high, 2);
+d_highDensity_SD = std(d_rho_high,0, 2);
+
+data = [d_lowDensity, d_highDensity];
+err = [d_lowDensity_SD, d_highDensity_SD] / sqrt(5);
+figure;
+
+b = bar(data);
+xBar = zeros(6,2);
+
+hold on
+for i = 1:2
+    xBar(:, i) = b(i).XEndPoints;
+end
+
+for i =1:length(groups)
+    for j = 1:2
+        er = errorbar(xBar(i,j),data(i,j), err(i,j), 'o');
+        er.Color = [0 0 0];
+        hold on
+    end
+end
+hold on
+
+% Set colors (optional)
+b(1).FaceColor = [1 1 1];     % blue
+b(2).FaceColor = [0 0 0];         % orange
+
+% Label settings
+set(gca, 'XTickLabel', groups, 'XTickLabelRotation', 45, 'FontSize', 18, 'FontWeight', 'bold');
+
+
+ylabel('Displacement speed (\mum/min)', 'FontSize',15);
+yticks([0.25, 0.5, 0.75, 1.0,1.25, 1.5,1.75, 2.0])
+ylim([0.0 2.0]);
+legend({'Low Density','High Density'}, 'Location', 'northwest');
+box on;
+set(gca,'fontsize',18);
+set(gcf, 'Color', 'white')
