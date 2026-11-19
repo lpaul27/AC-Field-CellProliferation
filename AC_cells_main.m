@@ -8,10 +8,10 @@ close all;
 global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius ...
     c_rec c_lig adh runTime Field xphi yphi w ExMax EyMax mu ...
     critRad Ccyclet critical_pressure daughter_noise Cell_std death_rate ...
-    death_pressure chill dim2directionality displacement live polarhist dim1directionality...
+    death_pressure dim2directionality displacement live polarhist dim1directionality...
     Discrete Sine dim1displacement rand_division speed_decay dim1noise dim2noise etaX etaY ...                                                                                        %#ok<GVMIS>
     disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise displacement3by2 ...                                                                                               %#ok<GVMIS>
-    densityplotDIR densityplotDISP densityDirTime tau E0 MeanSquareDisplacement Ra runs
+    densityplotDIR densityplotDISP densityDirTime tau E0 MeanSquareDisplacement Ra runs %#ok<GVMIS>
 
 %% Most important parameters for types of simulations
 
@@ -190,7 +190,7 @@ for a = 1:1
             % Parameters for live simulation visualization
 
             if(live)
-                cell=figure;                                                            %#ok<UNRCH>
+                cell=figure;                                                            
                 cell.WindowState = 'maximized';
                 axis([0 lbox 0 lbox])
                 b = get(gca,'XTickLabel');
@@ -252,7 +252,7 @@ for a = 1:1
                 end
 
                 if(intracellular_signalling)
-                    [polarity, vx, vy] = Polarization(polarity, ExMax, EyMax, vel_ang, time);
+                    [polarity, vx, vy] = Polarization(polarity, ExMax, EyMax, vel_ang, time); %#ok<UNRCH>
                 end
 
                 timer(time, 2) = toc(CFtimer);
@@ -285,7 +285,7 @@ for a = 1:1
 
                 %% Live Simulation visualization plot
                 if(live)
-                    scale_efield = 2;                                                   %#ok<UNRCH>
+                    scale_efield = 2;                                                   
                     x_efield_plot = reshape(X,length(X)^2,1);
                     y_efield_plot = reshape(Y,length(Y)^2,1);
                     u_efield_plot = reshape(u,length(u)^2,1);
