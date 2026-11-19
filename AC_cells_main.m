@@ -13,6 +13,18 @@ global NumCells dt lbox vels_med eta nu neighborWeight k R_boundary Cell_radius 
     disphist velocity_noise sigmax sigmay directednessplot velocity_mag_noise displacement3by2 ...                                                                                               %#ok<GVMIS>
     densityplotDIR densityplotDISP densityDirTime tau E0 MeanSquareDisplacement Ra runs
 
+%% Most important parameters for types of simulations
+
+Number_of_runs_per_EF = 1;           % number of runs at each EF, per density
+Number_of_cells = 50;                % number of cells (standard, non-density)
+
+% Code switches
+
+density = true;                      % tests different densities (e.g. low & high density)
+Field = true;                        % Signals to time varying fields that field is on if 1
+rand_division = false;               % Enables field-directed mitosis
+Discrete = false;                    % Enables directionally Discrete field change
+
 %% Types of plots
 live = 0;                               % Enables Live Visualization
 dim1directionality = 0;                 % enables 1D Directionality plot
@@ -28,18 +40,8 @@ densityplotDISP = 0;                    % enables density plot for displacement
 densityDirTime = 0;                     % enables directionality over time plot for density
 MeanSquareDisplacement = 0;             % enables MSD vs time
 
-% Number of runs to be averaged across
-runs = 5;                               
-
 % begin start timer
 tStart = tic;
-
-%% constants found to make displacement plost match
-noises = [0.26, 0.24, 0.2, 0.28, 0.32, 0.56];
-forceScale = [1,1.11,1.4,0.85,0.77,0.45];
-noiseX = [0.28,0.28,0.23,0.33,0.37,0.61];
-v0 = [0.083, 0.11, 0.185, 0.07, 0.059, 0.026];
-nufric = [1, 1.15, 1.43, 0.93, 0.81,0.46];
 
 %% Declaration of strings for class for access in loops
 posxrun_str = ["posxr1", "posxr2", "posxr3", "posxr4", "posxr5", "posxr6"];
@@ -54,17 +56,16 @@ Directrun_str = ["direct1", "direct2", "direct3", "direct4", "direct5", "direct6
 % 4: 75 V/m                 75 V/m
 % 5: 100 V/m                100 V/m
 % 6: 200 V/m                200 V/m
-
+runs = Number_of_runs_per_EF;
 fields = [0, 30, 50, 75,  100, 200];
 densityfields = [15, 30, 50, 75, 100, 200];
-density = 1;        % signals that a varying number of cells is intended
-% *default is 50 cells 
 
 %% Preallocation
 directedness = zeros(length(fields),1);
 dispAvg = zeros(length(fields),1);
 cell_posData = struct();
-cell_densitydata = struct();
+
+%density comparison system requires double the runs
 if(density)
     runs = runs * 2;
 end
@@ -72,364 +73,350 @@ end
 %% for testing dt values:
 dt_diff_disp = zeros(10, 1);
 dt_diff_dir = zeros(10,1);
+
+% outer loop for parameter sweeps (a)
 for a = 1:1
-%% end 
-% Set to a higher value if multiple field intended
-for z = 1:6
-    % Preallocation for data storage
-    displacement_run = zeros(runs, 1);
-    displacementAvg = zeros(runs,  1);
-    dispruntheta = zeros(runs,1);
-    
-    %% Inner loop for number of runs at desired field strength
-    for p = 1:runs
-        % Begin Simulation timer
-        %% Domain Parameters
-        runTime = 120;                           % total runTime of simulation
-        dt = 1;                                  % time step
-        NumCells = 50;
-        if(density)
-            if(~mod(p,2))
-                NumCells =35;                           % number of cells in simulation
+    % secondary loop for EF sweep (0, 30, 50, 75, 100, 200)
+    for z = 1:6
+
+        % Preallocation for data storage
+        displacement_run = zeros(runs, 1);
+        displacementAvg = zeros(runs,  1);
+        dispruntheta = zeros(runs,1);
+
+        % Third loop for number of runs at desired field strength
+        for p = 1:runs
+            % Domain Parameters (can be altered between runs if necessary)
+            runTime = 120;                           % total runTime of simulation
+            dt = 1;                                  % time step
+
+            % sets cells based on standard or density system 
+            NumCells = Number_of_cells;
+            if(density)
+                if(~mod(p,2))
+                    NumCells =35;                         
+                end
+                if(mod(p,2))
+                    NumCells = 210;
+                end
             end
-            if(mod(p,2))
-                NumCells = 210;
+
+            vels_med = 1.5;                          % velocity of cells
+            lbox = 2050;                             % size of the box particles are confined to
+            R_boundary = lbox/6;                     % Sample domain size for cells to begin
+
+            %% Cell Parameters
+            critRad = 12;                            % critical radius for mitosis
+            Ccyclet = 270;                           % benchmark cell cycle time; CNCC: we expect 5-10 mitosis (=270)
+            death_rate = 1e-200;                     % Cell death rate
+            death_pressure = 1000;                   % Pressure required for apoptosis
+            critical_pressure = 0.05;                % Critical presssure for dormancy
+            Cell_radius = 10;                        % fixed cell radius
+            Cell_std = 0;                            % Standard Deviation of cell radii
+            speed_decay = 100;                       % speed decay rate for mitosis
+            alpha = 3e-3;                            % EF tweaking param
+
+            %% Cell-cell parameters
+            k = 1;                                  % constant in force repulsion calculation (~elasticity)
+            daughter_noise = 0.1;                   % noise strength in mitosis separation
+            nu = 0.7;                               % friction factor
+            mu = 1;                                 % electrical mobility
+            neighborWeight = 1;                     % group movement weighting
+            c_rec = 0.9;                            % mean receptor concentration (normalized)
+            c_lig = 0.9;                            % mean ligand concentration (normalized)
+            adh = 0;                                % adhesive coefficient
+            Ra = 1;                              % Radius of alignemnt
+
+            %% Cell-Field parameters
+
+            ExMax = alpha* fields(z);               % x field max
+            if(density)
+                ExMax = alpha * densityfields(z);
             end
-        end
-        vels_med = 1.5;  %! 1.2                    % initial velocity param center point
-        lbox = 2050;  %2050                           % size of the box particles are confined to
-        R_boundary = lbox/6; %lbox/6;                     % Sample domain size for cells to begin
-        chill = 15;                              % chill time to suppress cell death
+            EyMax = 0;                              % y field max
+            absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
 
-        %% Cell Parameters
-        critRad = 12;                            % critical radius for mitosis
-        Ccyclet = 270;                           % benchmark cell cycle time; CNCC: we expect 5-10 mitosis (=270)
-        death_rate = 1e-200;                     % Cell death rate
-        death_pressure = 1000;                   % Pressure required for apoptosis
-        critical_pressure = 0.05;                % Critical presssure for dormancy
-        Cell_radius = 10;%10;                        % fixed cell radius
-        Cell_std = 0;%0.8;   % 0.08                      % Standard Deviation of cell radii
-        speed_decay = 100;                       % speed decay rate for mitosis
-        alpha = 3e-3;                               % EF tweaking param
+            % Sinusoidal parameters
+            % f(t) = A sin(wt + o)                  % form
+            Sine = 0;                               % enables sinusoidal field change
+            w = 8*pi /(runTime);                    % angular frequency
+            xphi = 0;                               % x field offset
+            yphi = 0;                               % y field offset
 
-        %% Cell-cell parameters
-        k = 2;%0.01;        %0.1                       % constant in force repulsion calculation (~elasticity)
-        daughter_noise = 0.1;                   % noise strength in mitosis separation
-        nu = 0.7;                                 % friction factor
-        mu = 1;  %0.00035;    % 0.01, 0.00065         % electrical mobility
-        neighborWeight = 1;                     % group movement weighting
-        c_rec = 0.9;                            % mean receptor concentration (normalized)
-        c_lig = 0.9;                            % mean ligand concentration (normalized)
-        adh = 0;                                % adhesive coefficient
-        Ra = 0.01;                                 % Radius of alignemnt
-        %% Cell-Field parameters
-        % Discrete Parameters
-        Field = 1;                              % Signals to time varying fields that field is on if 1
-        rand_division = 0;                      % Enables field-directed mitosis
-        Discrete = 0;                           % Enables directionally Discrete field change
-        
-        %!! tweaking param
-        ExMax = alpha* fields(z);                      % x field max
-        if(density)
-            ExMax = alpha * densityfields(z);
-        end
-        EyMax = 0;                              % y field max
-        absE = sqrt(EyMax^2 + ExMax^2);         % magnitude of field
+            %% Simulation type parameters
+            dim1noise = 1;                          % signals type of noise (1D)
 
-        % Sinusoidal parameters
-        % f(t) = A sin(wt + o)                  % form
-        Sine = 0;                               % enables sinusoidal field change
-        w = 8*pi /(runTime);                    % angular frequency
-        xphi = 0;                               % x field offset
-        yphi = 0;                               % y field offset
+            % !! tweaking param
+            eta = 0.45;                             % noise
+            dim2noise = 0;                          % signals type of noise (2D)
+            etaX = eta / 2;                         % X component of noise strength
+            etaY = 3*eta;                           % Y component of noise strength
+            velocity_noise = 0;                     % signals type of noise (velocity)
+            sigmax = eta * ExMax / (1 + absE);      % velocity based noise parameter (x)
+            sigmay = eta * EyMax / (1 + absE);      % velocity based noise parameter (y)
+            velocity_mag_noise = 0;                 % signals type of noise (velocity magnitude)
 
-        %% Simulation type parameters
-        dim1noise = 1;                          % signals type of noise (1D)
-
-        % !! tweaking param
-        eta = 0.45;       %0.45                      % noise
-        dim2noise = 0;                          % signals type of noise (2D)
-            etaX = eta / 2;                     % X component of noise strength
-            etaY = 3*eta;                       % Y component of noise strength
-            velocity_noise = 0;                 % signals type of noise (velocity)
-            sigmax = eta * ExMax / (1 + absE);  % velocity based noise parameter (x)
-            sigmay = eta * EyMax / (1 + absE);  % velocity based noise parameter (y)
-            velocity_mag_noise = 0;             % signals type of noise (velocity magnitude)
-        
-        %% Polarity (intracellular)
-        intracellular_signalling = 0;
+            %% Polarity (intracellular)
+            intracellular_signalling = false;
             tau = 20;                            % time scale parameter
             E0 = 50;                           % Relative reference point for saturation
-            
 
-        %% Plot parameters
+            %% Plot parameters
 
-        time_control = (1:runTime)';            % time axis for plotting
-        R = zeros(NumCells, 1);                 % Red scale for plotting
-        G = ones(NumCells, 1);                  % Green scale for plotting
-        B = ones(NumCells, 1);                  % Blue scale for plotting
+            time_control = (1:runTime)';            % time axis for plotting
+            R = zeros(NumCells, 1);                 % Red scale for plotting
+            G = ones(NumCells, 1);                  % Green scale for plotting
+            B = ones(NumCells, 1);                  % Blue scale for plotting
 
+            %% Initialization of Variables
+            % Preallocates values for optimal computation
 
+            x_time = zeros(runTime, NumCells);      % Matrix of x position for each step
+            y_time = zeros(runTime, NumCells);      % Matrix of y position for each step
+            vx_time = zeros(runTime, NumCells);     % Matrix of vx position for each step
+            vy_time = zeros(runTime, NumCells);     % Matrix of vy position for each step
+            theta_time = zeros(runTime, NumCells);  % Matrix of angle for each step
+            timer = zeros(runTime, 3);              % Timer to keep track of computational efficiency
+            RadTracker = zeros(runTime, NumCells);  % tracker of cell size
+            exempt = ones(NumCells, 1);             % cell death logical
+            cell_lifetime = zeros(NumCells, 1);     % cell lifetime tracker
+            growth_rate = zeros(NumCells, 1);       % initializes growth rate for all cells
+            tmp_time = zeros(NumCells, 1);
+            EF_x = zeros(NumCells, 1);
+            EF_y = zeros(NumCells, 1);
+            Epressure = zeros(NumCells, 1);
 
-        %% Initialization of Variables
-        % Preallocates values for optimal computation
+            %% Plotting Parameters
+            % Parameters for live simulation visualization
 
-        x_time = zeros(runTime, NumCells);      % Matrix of x position for each step
-        y_time = zeros(runTime, NumCells);      % Matrix of y position for each step
-        vx_time = zeros(runTime, NumCells);     % Matrix of vx position for each step
-        vy_time = zeros(runTime, NumCells);     % Matrix of vy position for each step
-        theta_time = zeros(runTime, NumCells);  % Matrix of angle for each step
-        timer = zeros(runTime, 3);              % Timer to keep track of computational efficiency
-        RadTracker = zeros(runTime, NumCells);  % tracker of cell size
-        exempt = ones(NumCells, 1);             % cell death logical
-        cell_lifetime = zeros(NumCells, 1);     % cell lifetime tracker
-        growth_rate = zeros(NumCells, 1);       % initializes growth rate for all cells
-        tmp_time = zeros(NumCells, 1);
-        EF_x = zeros(NumCells, 1);
-        EF_y = zeros(NumCells, 1);
-        Epressure = zeros(NumCells, 1);
-
-        %% Plotting Parameters
-        % Parameters for live simulation visualization
-
-        if(live)
-            cell=figure;                                                            %#ok<UNRCH>
-            cell.WindowState = 'maximized';
-            axis([0 lbox 0 lbox])
-            a = get(gca,'XTickLabel');
-            set(gca,'XTickLabel',a,'fontsize',12);
-            axis('square')
-            hold on
-            skip_points = 14;
-        end
-        %% Initialization of System
-        % Based on Monte Carlo initialization
-
-        % Initialize cells
-        [x, y, vx, vy, Cradius, vel_ang, polarity] = Initialize();
-
-        %% Simulation loop
-        for time = 1:runTime 
-            % Time loop
-            if(exempt == zeros(size(exempt)))
-                % if all cells die, end simulation
-                disp('All cells dead')
-                break
-            end
-            for j = 1:NumCells
-                growth_rate(j, 1) = (pi * randgaussrad(critRad, (critRad / 2)).^2) / (2* Ccyclet);
-            end
-            % Reinitializes electric field
-%             if(time || Field)
-%                 [u, v, X, Y, Ex_strength, Ey_strength] = EF_Grid_Init(time);
-%             end
-
-          
-                [u, v, X, Y, Ex_strength, Ey_strength] = EF_Grid_Init(time);
-            % Store plotting data
-
-            % Displacement data
-            x_time(time, :) = x(:,1);
-            y_time(time, :) = y(:,1);
-
-            % Velocity data
-            vx_time(time, :) = vx(:, 1);
-            vy_time(time,:) = vy(:,1);
-
-            % Directionality and Mitosis data
-            theta_time(time, :) = vel_ang(:,1);
-            RadTracker(time, :) = Cradius(:,1);
-
-
-            %% Force update functions (cell-cell & cell-field)
-
-            % begin cell-cell timer
-            CCtimer = tic;
-
-            % cell-cell force function
-            [Fx, Fy, neibAngAvg, Cpressure] = Interaction_Forces...
-                (x, y, Cradius, vel_ang, exempt);
-
-            timer(time, 1) = toc(CCtimer);
-            % end cell-cell timer
-
-
-
-            % begin cell-field timer
-            CFtimer = tic;
-
-            % cell-field force function
-            if(~intracellular_signalling)
-                [EF_x, EF_y, Epressure] = Electric_Force(Cradius, x, y, u, v, X, Y);
-            end
-            if(intracellular_signalling)
-                [polarity, vx, vy] = Polarization(polarity, ExMax, EyMax, vel_ang, time);
-            end
-
-            timer(time, 2) = toc(CFtimer);
-            % end cell-field timer
-
-            %% Step update
-
-            % Begin step update timer
-            Steptimer = tic;
-
-            % Calculate net force; exclude dead cells
-            Fx_net = nu*(Fx + mu*EF_x) .* exempt;
-            Fy_net = nu*(Fy + mu*EF_y) .* exempt;
-
-            % Calculate the net pressure
-            Pressure = 0*Epressure + Cpressure;
-            % Pressure is currently set to be indepenant of the EF.
-
-            % Step update function
-            [x, y, vx, vy, cell_lifetime, tmp_time] = Step_Update(x, y, vx, vy, Fx_net, Fy_net, neibAngAvg, exempt, cell_lifetime, Cradius, growth_rate, tmp_time);
-            vel_ang = atan2(vy,vx);
-
-            % end step update timer
-            timer(time,3) = toc(Steptimer);
-
-            % Update cell size // Mitosis // Apoptosis
-            [Cradius,x, y, vx, vy, vel_ang, x_time, y_time, theta_time, RadTracker, R, G, B, Pressure, exempt, vx_time, vy_time, cell_lifetime, tmp_time, polarity]...
-                = RadGrowth...
-                (Cradius, Pressure, x, y, vel_ang, vx, vy, x_time, y_time, time, theta_time,RadTracker, R, G, B, exempt, vx_time, vy_time, cell_lifetime, Ex_strength, Ey_strength, growth_rate, tmp_time, polarity);
-
-            %% Live Simulation visualization plot
             if(live)
-                scale_efield = 2;                                                   %#ok<UNRCH>
-                x_efield_plot = reshape(X,length(X)^2,1);
-                y_efield_plot = reshape(Y,length(Y)^2,1);
-                u_efield_plot = reshape(u,length(u)^2,1);
-                v_efield_plot = reshape(v,length(v)^2,1);
-                v_result = [vx vy];
-                v_result_norm = sqrt(diag(v_result * v_result'));
-
-                cla
-                set(gcf,'doublebuffer','on')
-                hold on;
-                skip_nth =51;
-                quiver(x_efield_plot(1:skip_nth:end),y_efield_plot(1:skip_nth:end),scale_efield*u_efield_plot(1:skip_nth:end),scale_efield*v_efield_plot(1:skip_nth:end), 'Color', [1, 0., 0],   'LineWidth', 1., 'MaxHeadSize', 0.9);
-                hold on;
-                quiver(x,y,Cradius .* vx./(0.5*v_result_norm),Cradius.*vy./(0.5*v_result_norm), 'Color',[0, 0, 0], 'MarkerSize', 10, 'LineWidth', 1.5,  'AutoScale', 'off') ;
-                hold on;
-                for i = 1:NumCells
-                    circles(x(i), y(i), Cradius(i), 'facecolor', [R(i), G(i), B(i)]);
-                end
-                hold on;
-                drawnow
+                cell=figure;                                                            %#ok<UNRCH>
+                cell.WindowState = 'maximized';
+                axis([0 lbox 0 lbox])
+                b = get(gca,'XTickLabel');
+                set(gca,'XTickLabel',b,'fontsize',12);
+                axis('square')
                 hold on
+                skip_points = 14;
             end
-        end % end time loop
-        %% Static Plot Visualization
-        x_centered = abs(x_time - x_time(1,:));
-        y_centered = abs(y_time - y_time(1,:));
-        displacement_mag = sqrt(x_centered.^2+y_centered.^2);
-        %         displacementrunx = (xavg(runTime, 1) - xavg(1,1)) / runTime;
-        %         displacementruny = (yavg(runTime, 1) - yavg(1,1)) / runTime;
-        displacement_run(p,1) = mean(displacement_mag(runTime, :),2) / runTime;
+            %% Initialization of System
+            % Based on Monte Carlo initialization
 
-        x_raw = (x_time - x_time(1,:));
-        y_raw = (y_time - y_time(1,:));
-        dispruntheta = mean(cos(atan2(y_raw(runTime,:) , x_raw(runTime, :))),2);
-        posxrun_str = ["posxr1", "posxr2", "posxr3", "posxr4", "posxr5", "posxr6"];
-        posyrun_str = ["posyr1", "posyr2", "posyr3", "posyr4", "posyr5", "posyr6"];
+            % Initialize cells
+            [x, y, vx, vy, Cradius, vel_ang, polarity] = Initialize();
 
-        %z = 1;              % resets field strength to index correctly
-        %% Important: Leave z as the index of the loop if doing all field strengths, otherwise, 
-        % it must be indexed to 1
+            %% Simulation time loop
+            for time = 1:runTime
+                % Time loop
+                if(exempt == zeros(size(exempt)))
+                    % if all cells die, end simulation
+                    disp('All cells dead')
+                    break
+                end
+                for j = 1:NumCells
+                    growth_rate(j, 1) = (pi * randgaussrad(critRad, (critRad / 2)).^2) / (2* Ccyclet);
+                end
 
-        switch z
-            case 1
-                cell_posData(p).posxr1 = x_time - x_time(1,:);
-                cell_posData(p).posyr1 = y_time - y_time(1,:);
-                cell_posData(p).theta1 = theta_time;
-                y_tmp = cell_posData(p).posyr1;
-                x_tmp = cell_posData(p).posxr1;
-                cell_posData(p).direct1 = cos(theta_time);
-            case 2
-                cell_posData(p).posxr2 = x_time - x_time(1,:);
-                cell_posData(p).posyr2 = y_time - y_time(1,:);
-                cell_posData(p).theta2 = theta_time;
-                y_tmp = cell_posData(p).posyr2;
-                x_tmp = cell_posData(p).posxr2;
-                cell_posData(p).direct2 = cos(theta_time);
-            case 3
-                cell_posData(p).posxr3 = x_time - x_time(1,:);
-                cell_posData(p).posyr3 = y_time - y_time(1,:);
-                cell_posData(p).theta3 = theta_time;
-                y_tmp = cell_posData(p).posyr3;
-                x_tmp = cell_posData(p).posxr3;
-                cell_posData(p).direct3 = cos(theta_time);
-            case 4
-                cell_posData(p).posxr4 = x_time - x_time(1,:);
-                cell_posData(p).posyr4 = y_time - y_time(1,:);
-                cell_posData(p).theta4 = theta_time;
-                y_tmp = cell_posData(p).posyr4;
-                x_tmp = cell_posData(p).posxr4;
-                cell_posData(p).direct4 = cos(theta_time);
-            case 5
-                cell_posData(p).posxr5 = x_time - x_time(1,:);
-                cell_posData(p).posyr5 = y_time - y_time(1,:);
-                cell_posData(p).theta5 = theta_time;
-                y_tmp = cell_posData(p).posyr5;
-                x_tmp = cell_posData(p).posxr5;
-                cell_posData(p).direct5 = cos(theta_time);
-            case 6
-                cell_posData(p).posxr6 = x_time - x_time(1,:);
-                cell_posData(p).posyr6 = y_time - y_time(1,:);
-                cell_posData(p).theta6 = theta_time;
-                y_tmp = cell_posData(p).posyr6;
-                x_tmp = cell_posData(p).posxr6;
-                cell_posData(p).direct6 = cos(theta_time);
+                [u, v, X, Y, Ex_strength, Ey_strength] = EF_Grid_Init(time);
+
+                % Displacement data
+                x_time(time, :) = x(:,1);
+                y_time(time, :) = y(:,1);
+
+                % Velocity data
+                vx_time(time, :) = vx(:, 1);
+                vy_time(time,:) = vy(:,1);
+
+                % Directionality and Mitosis data
+                theta_time(time, :) = vel_ang(:,1);
+                RadTracker(time, :) = Cradius(:,1);
+
+                %% Force update functions (cell-cell & cell-field)
+
+                % begin cell-cell timer
+                CCtimer = tic;
+
+                % cell-cell force function
+                [Fx, Fy, neibAngAvg, Cpressure] = Interaction_Forces...
+                    (x, y, Cradius, vel_ang, exempt);
+
+                timer(time, 1) = toc(CCtimer);
+                % end cell-cell timer
+
+                % begin cell-field timer
+                CFtimer = tic;
+
+                % cell-field force function
+                if(~intracellular_signalling)
+                    [EF_x, EF_y, Epressure] = Electric_Force(Cradius, x, y, u, v, X, Y);
+                end
+
+                if(intracellular_signalling)
+                    [polarity, vx, vy] = Polarization(polarity, ExMax, EyMax, vel_ang, time);
+                end
+
+                timer(time, 2) = toc(CFtimer);
+                % end cell-field timer
+
+                %% Step update
+
+                % Begin step update timer
+                Steptimer = tic;
+
+                % Calculate net force; exclude dead cells
+                Fx_net = nu*(Fx + mu*EF_x) .* exempt;
+                Fy_net = nu*(Fy + mu*EF_y) .* exempt;
+
+                % Calculate the net pressure
+                Pressure = 0*Epressure + Cpressure;
+                % Pressure is currently set to be indepenant of the EF.
+
+                % Step update function
+                [x, y, vx, vy, cell_lifetime, tmp_time] = Step_Update(x, y, vx, vy, Fx_net, Fy_net, neibAngAvg, exempt, cell_lifetime, Cradius, growth_rate, tmp_time);
+                vel_ang = atan2(vy,vx);
+
+                % end step update timer
+                timer(time,3) = toc(Steptimer);
+
+                % Update cell size // Mitosis // Apoptosis
+                [Cradius,x, y, vx, vy, vel_ang, x_time, y_time, theta_time, RadTracker, R, G, B, Pressure, exempt, vx_time, vy_time, cell_lifetime, tmp_time, polarity]...
+                    = RadGrowth...
+                    (Cradius, Pressure, x, y, vel_ang, vx, vy, x_time, y_time, time, theta_time,RadTracker, R, G, B, exempt, vx_time, vy_time, cell_lifetime, Ex_strength, Ey_strength, growth_rate, tmp_time, polarity);
+
+                %% Live Simulation visualization plot
+                if(live)
+                    scale_efield = 2;                                                   %#ok<UNRCH>
+                    x_efield_plot = reshape(X,length(X)^2,1);
+                    y_efield_plot = reshape(Y,length(Y)^2,1);
+                    u_efield_plot = reshape(u,length(u)^2,1);
+                    v_efield_plot = reshape(v,length(v)^2,1);
+                    v_result = [vx vy];
+                    v_result_norm = sqrt(diag(v_result * v_result'));
+
+                    cla
+                    set(gcf,'doublebuffer','on')
+                    hold on;
+                    skip_nth =51;
+                    quiver(x_efield_plot(1:skip_nth:end),y_efield_plot(1:skip_nth:end),scale_efield*u_efield_plot(1:skip_nth:end),scale_efield*v_efield_plot(1:skip_nth:end), 'Color', [1, 0., 0],   'LineWidth', 1., 'MaxHeadSize', 0.9);
+                    hold on;
+                    quiver(x,y,Cradius .* vx./(0.5*v_result_norm),Cradius.*vy./(0.5*v_result_norm), 'Color',[0, 0, 0], 'MarkerSize', 10, 'LineWidth', 1.5,  'AutoScale', 'off') ;
+                    hold on;
+                    for i = 1:NumCells
+                        circles(x(i), y(i), Cradius(i), 'facecolor', [R(i), G(i), B(i)]);
+                    end
+                    hold on;
+                    drawnow
+                    hold on
+                end % end live plot
+            end % end time loop
+
+            %% Static Plot Visualization
+            x_centered = abs(x_time - x_time(1,:));
+            y_centered = abs(y_time - y_time(1,:));
+            displacement_mag = sqrt(x_centered.^2+y_centered.^2);
+            displacement_run(p,1) = mean(displacement_mag(runTime, :),2) / runTime;
+
+            x_raw = (x_time - x_time(1,:));
+            y_raw = (y_time - y_time(1,:));
+            dispruntheta = mean(cos(atan2(y_raw(runTime,:) , x_raw(runTime, :))),2);
+            posxrun_str = ["posxr1", "posxr2", "posxr3", "posxr4", "posxr5", "posxr6"];
+            posyrun_str = ["posyr1", "posyr2", "posyr3", "posyr4", "posyr5", "posyr6"];
+
+            %% Important: Leave z as the index of the loop if doing all field strengths, otherwise,
+            % it must be indexed to 1
+
+            switch z
+                case 1
+                    cell_posData(p).posxr1 = x_time - x_time(1,:);
+                    cell_posData(p).posyr1 = y_time - y_time(1,:);
+                    cell_posData(p).theta1 = theta_time;
+                    y_tmp = cell_posData(p).posyr1;
+                    x_tmp = cell_posData(p).posxr1;
+                    cell_posData(p).direct1 = cos(theta_time);
+                case 2
+                    cell_posData(p).posxr2 = x_time - x_time(1,:);
+                    cell_posData(p).posyr2 = y_time - y_time(1,:);
+                    cell_posData(p).theta2 = theta_time;
+                    y_tmp = cell_posData(p).posyr2;
+                    x_tmp = cell_posData(p).posxr2;
+                    cell_posData(p).direct2 = cos(theta_time);
+                case 3
+                    cell_posData(p).posxr3 = x_time - x_time(1,:);
+                    cell_posData(p).posyr3 = y_time - y_time(1,:);
+                    cell_posData(p).theta3 = theta_time;
+                    y_tmp = cell_posData(p).posyr3;
+                    x_tmp = cell_posData(p).posxr3;
+                    cell_posData(p).direct3 = cos(theta_time);
+                case 4
+                    cell_posData(p).posxr4 = x_time - x_time(1,:);
+                    cell_posData(p).posyr4 = y_time - y_time(1,:);
+                    cell_posData(p).theta4 = theta_time;
+                    y_tmp = cell_posData(p).posyr4;
+                    x_tmp = cell_posData(p).posxr4;
+                    cell_posData(p).direct4 = cos(theta_time);
+                case 5
+                    cell_posData(p).posxr5 = x_time - x_time(1,:);
+                    cell_posData(p).posyr5 = y_time - y_time(1,:);
+                    cell_posData(p).theta5 = theta_time;
+                    y_tmp = cell_posData(p).posyr5;
+                    x_tmp = cell_posData(p).posxr5;
+                    cell_posData(p).direct5 = cos(theta_time);
+                case 6
+                    cell_posData(p).posxr6 = x_time - x_time(1,:);
+                    cell_posData(p).posyr6 = y_time - y_time(1,:);
+                    cell_posData(p).theta6 = theta_time;
+                    y_tmp = cell_posData(p).posyr6;
+                    x_tmp = cell_posData(p).posxr6;
+                    cell_posData(p).direct6 = cos(theta_time);
+            end
+
+        end
+        directedness(z,1) = (dispruntheta);
+    end
+
+    if(Field)
+        iterate = length(fields);
+    else
+        iterate = 1;
+    end
+
+    for i = 1:iterate
+        tmp1 = zeros(runs, 1);
+        tmpSD1 = zeros(runs, 1);
+        tmp_dispspeed = zeros(runs, 1);
+        tmp_dispspeedSD = zeros(runs, 1);
+
+        for j = 1:runs
+            cell_posData(j).posxmean = mean(cell_posData(j).(posxrun_str(i)),2);
+            cell_posData(j).posxSD = std(cell_posData(j).(posxrun_str(i)),0,2);
+
+            cell_posData(j).posymean = mean(cell_posData(j).(posyrun_str(i)),2);
+            cell_posData(j).posySD = std(cell_posData(j).(posyrun_str(i)),0,2);
+
+            % displacement quantities temp
+            tmp_vecmag = mean(sqrt((cell_posData(j).(posxrun_str(i))).^2 + (cell_posData(j).(posyrun_str(i))).^2 ),2);
+            tmp_vecmagSD = std(sqrt((cell_posData(j).(posxrun_str(i))).^2 + (cell_posData(j).(posyrun_str(i))).^2 ),1,2);
+            tmp_dispspeed(j,1) = tmp_vecmag(runTime) / runTime;
+            tmp_dispspeedSD(j,1) = tmp_vecmagSD(runTime) / runTime;
+
+            % directionality quantities temp
+            tmp0 = mean(cell_posData(j).(Directrun_str(i)),2);
+            tmpSD0 = std(cell_posData(j).(Directrun_str(i)),1,2);
+            tmp1(j,1) = tmp0(runTime);
+            tmpSD1(j,1) = tmpSD0(runTime);
         end
 
-    end
-    directedness(z,1) = (dispruntheta);
-end
+        cell_posData(i).directionality_mean = mean(tmp1);
+        cell_posData(i).directionalitySD = std(tmpSD1);
 
-if(Field)
-    iterate = length(fields);
-else 
-    iterate = 1;
-end
+        cell_posData(i).displacement_mean = mean(tmp_dispspeed);
+        cell_posData(i).displacementSD = std(tmp_dispspeedSD);
 
-for i = 1:iterate
-    tmp1 = zeros(runs, 1);
-    tmpSD1 = zeros(runs, 1);
-    tmp_dispspeed = zeros(runs, 1);
-    tmp_dispspeedSD = zeros(runs, 1);
-
-    for j = 1:runs
-        cell_posData(j).posxmean = mean(cell_posData(j).(posxrun_str(i)),2);
-        cell_posData(j).posxSD = std(cell_posData(j).(posxrun_str(i)),0,2);
-
-        cell_posData(j).posymean = mean(cell_posData(j).(posyrun_str(i)),2);
-        cell_posData(j).posySD = std(cell_posData(j).(posyrun_str(i)),0,2);
-
-        % displacement quantities temp
-        tmp_vecmag = mean(sqrt((cell_posData(j).(posxrun_str(i))).^2 + (cell_posData(j).(posyrun_str(i))).^2 ),2);
-        tmp_vecmagSD = std(sqrt((cell_posData(j).(posxrun_str(i))).^2 + (cell_posData(j).(posyrun_str(i))).^2 ),1,2);
-        tmp_dispspeed(j,1) = tmp_vecmag(runTime) / runTime;
-        tmp_dispspeedSD(j,1) = tmp_vecmagSD(runTime) / runTime;
-
-        % directionality quantities temp
-        tmp0 = mean(cell_posData(j).(Directrun_str(i)),2);
-        tmpSD0 = std(cell_posData(j).(Directrun_str(i)),1,2);
-        tmp1(j,1) = tmp0(runTime);
-        tmpSD1(j,1) = tmpSD0(runTime);
     end
 
-    cell_posData(i).directionality_mean = mean(tmp1);
-    cell_posData(i).directionalitySD = std(tmpSD1);
-
-    cell_posData(i).displacement_mean = mean(tmp_dispspeed);
-    cell_posData(i).displacementSD = std(tmp_dispspeedSD);
-    
-end
-
-dt_diff_dir(a, 1) = abs(cell_posData(6).directionality_mean) - abs(cell_posData(1).directionality_mean);
-dt_diff_disp(a,1) = cell_posData(6).displacement_mean - cell_posData(1).displacement_mean;
-%% end dt test loop
+    dt_diff_dir(a, 1) = abs(cell_posData(6).directionality_mean) - abs(cell_posData(1).directionality_mean);
+    dt_diff_disp(a,1) = cell_posData(6).displacement_mean - cell_posData(1).displacement_mean;
+    %% end dt test loop
 
 end
 Visualize(x_time,y_time, theta_time, time_control, dispAvg, directedness, fields, cell_posData);
